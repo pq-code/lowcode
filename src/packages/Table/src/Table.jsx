@@ -1,7 +1,7 @@
 import { defineComponent, ref, shallowRef, computed, onMounted } from 'vue';
 import { ElTooltip, ElTableColumn, ElTable, ElPagination } from 'element-plus';
-import useCodeConfig from '@renderer/views/draggingDragging/hooks/useCodeConfig.ts';
-import { deepClone } from '@renderer/utils/index';
+import useCodeConfig from '@/views/draggingDragging/hooks/useCodeConfig.ts';
+import { deepClone } from '@/utils/index';
 
 const Table = defineComponent({
   props: {

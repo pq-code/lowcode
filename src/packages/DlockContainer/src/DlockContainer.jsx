@@ -1,9 +1,9 @@
 import { defineComponent, computed } from 'vue';
-import { useDraggingDraggingStore } from '@renderer/stores/draggingDragging/useDraggingDraggingStore.ts';
+import { useDraggingDraggingStore } from '@/stores/draggingDragging/useDraggingDraggingStore.ts';
 import { storeToRefs } from 'pinia';
 import style from '../style/index.module.less';
 import { VueDraggable } from 'vue-draggable-plus';
-import useCodeConfig from '@renderer/views/draggingDragging/hooks/useCodeConfig.ts';
+import useCodeConfig from '@/views/draggingDragging/hooks/useCodeConfig.ts';
 
 const DlockContainer = defineComponent({
   props: {

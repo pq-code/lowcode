@@ -1,8 +1,8 @@
 import { defineComponent, ref, watch, onMounted, computed } from 'vue';
 import { ElRow, ElForm, ElTooltip, ElFormItem, ElCol, ElCollapse, ElCollapseItem, ElSelect, ElOption, ElInput, ElButton } from 'element-plus';
-import { http } from '@renderer/api';
-import useCodeConfig from '@renderer/views/draggingDragging/hooks/useCodeConfig.ts';
-import { TypeRenderEngine } from '@renderer/packages/RenderEngine/components/TypeRenderEngine.jsx';
+import { http } from '@/api';
+import useCodeConfig from '@/views/draggingDragging/hooks/useCodeConfig.ts';
+import { TypeRenderEngine } from '@/packages/RenderEngine/components/TypeRenderEngine.jsx';
 
 const From = defineComponent({
   props: {

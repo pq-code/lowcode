@@ -1,7 +1,9 @@
 import style from '../style/ComponentMaker.module.less';
-import { useDraggingDraggingStore } from '@renderer/stores/draggingDragging/useDraggingDraggingStore.ts';
+import { useDraggingDraggingStore } from '@/stores/draggingDragging/useDraggingDraggingStore.ts';
 import { VueDraggable } from 'vue-draggable-plus';
-import { ref, computed } from 'vue';
+import { ref, computed, defineComponent } from 'vue';
+import { storeToRefs } from 'pinia';
+import { ElTooltip } from 'element-plus';
 
 const ComponentMaker = defineComponent({
   props: {

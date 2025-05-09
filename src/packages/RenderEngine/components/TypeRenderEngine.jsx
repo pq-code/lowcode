@@ -1,15 +1,15 @@
-import Form from "@renderer/packages/Form";
+import Form from "@/packages/Form";
 import { ElInput } from "element-plus";
-import DlockContainer from '@renderer/packages/DlockContainer/src/DlockContainer.jsx';
+import DlockContainer from '@/packages/DlockContainer/src/DlockContainer.jsx';
 import { defineAsyncComponent } from 'vue';
 
 const component = (url) => {
   return defineAsyncComponent({
     loader: async () => {
       if (url.includes('element')) {
-        return await import(/* @vite-ignore */'../../../' + url);
+        return await import(/* @vite-ignore */url.replace('@renderer', '@'));
       } else {
-        return await import(/* @vite-ignore */'../../../' + url);
+        return await import(/* @vite-ignore */url.replace('@renderer', '@'));
       }
     },
     delay: 200,

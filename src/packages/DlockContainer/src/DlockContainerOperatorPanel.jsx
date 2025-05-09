@@ -1,6 +1,6 @@
 import { defineComponent, ref, watch, onMounted } from "vue";
-import CodeHighlight from "@renderer/packages/CodeHighlight/src/CodeHighlight.jsx";
-import { humpToUnderline } from '@renderer/utils/index'
+import CodeHighlight from "@/packages/CodeHighlight/src/CodeHighlight.jsx";
+import { humpToUnderline } from '@/utils/index'
 import {
   ElMenu,
   ElMenuItem,

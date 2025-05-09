@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { routerMap } from '@renderer/router/index'
+import { routerMap } from '@/router/index'
 
 const emits = defineEmits(["update:modelValue"]);
 const props = defineProps({

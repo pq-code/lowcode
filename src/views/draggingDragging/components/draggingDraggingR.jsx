@@ -1,10 +1,10 @@
 import { defineComponent, ref, watch, onMounted } from 'vue';
-import DlockContainerOperatorPanel from '@renderer/packages/DlockContainer/src/DlockContainerOperatorPanel.jsx'
-import FormvOperatorPanel from '@renderer/packages/Form/src/FormOperatorPanel.jsx'
+import DlockContainerOperatorPanel from '@/packages/DlockContainer/src/DlockContainerOperatorPanel.jsx'
+import FormvOperatorPanel from '@/packages/Form/src/FormOperatorPanel.jsx'
 import { ElInput, ElSwitch } from 'element-plus';
-import { useDraggingDraggingStore } from '@renderer/stores/draggingDragging/useDraggingDraggingStore.ts'
+import { useDraggingDraggingStore } from '@/stores/draggingDragging/useDraggingDraggingStore.ts'
 import { storeToRefs } from 'pinia'
-import ControlPanel from '@renderer/packages/ControlPanel/src/ControlPanel'
+import ControlPanel from '@/packages/ControlPanel/src/ControlPanel'
 
 const draggingDraggingL = defineComponent({
   props: {

@@ -8,31 +8,49 @@ declare module 'vue-router' {
   }
 }
 
-// 页面组件
-const Home = () => import('../views/Home.vue')
-const About = () => import('../views/About.vue')
+// 导出路由映射，用于侧边栏菜单
+export const routerMap = [
+  {
+    path: '/dashboard',
+    name: 'Dashboard',
+    meta: {
+      title: '仪表盘'
+    }
+  },
+  {
+    path: '/dragging-dragging',
+    name: 'DraggingDragging',
+    meta: {
+      title: '低代码编辑器'
+    }
+  }
+]
 
 const routes: Array<RouteRecordRaw> = [
   {
     path: '/',
-    name: 'Home',
-    component: Home,
+    redirect: '/dashboard'
+  },
+  {
+    path: '/dashboard',
+    name: 'Dashboard',
+    component: () => import('@/views/dashboard/dashboard.vue'),
     meta: {
-      title: '首页'
+      title: '仪表盘'
     }
   },
   {
-    path: '/about',
-    name: 'About',
-    component: About,
+    path: '/dragging-dragging',
+    name: 'DraggingDragging',
+    component: () => import('@/views/draggingDragging/draggingDragging.vue'),
     meta: {
-      title: '关于'
+      title: '低代码编辑器'
     }
   },
   // 404页面
   {
     path: '/:pathMatch(.*)*',
-    redirect: '/'
+    redirect: '/dashboard'
   }
 ]
 
@@ -44,7 +62,7 @@ const router = createRouter({
 // 路由前置守卫
 router.beforeEach((to: RouteLocationNormalized, from: RouteLocationNormalized, next: NavigationGuardNext) => {
   // 设置页面标题
-  document.title = `${to.meta.title || '默认标题'} - 低代码平台`
+  document.title = `${to.meta.title || '低代码平台'}`
   next()
 })
 

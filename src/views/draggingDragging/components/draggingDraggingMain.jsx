@@ -1,9 +1,10 @@
 import { defineComponent, ref, computed, onMounted } from 'vue';
-import RenderEngine from '@renderer/packages/RenderEngine/src/RenderEngine.jsx';
-import { buildUUID } from "@renderer/utils";
+import RenderEngine from '@/packages/RenderEngine/src/RenderEngine.jsx';
+import { buildUUID } from "@/utils";
 import { ElButton, ElDialog, ElTooltip } from 'element-plus';
-import { useDraggingDraggingStore } from '@renderer/stores/draggingDragging/useDraggingDraggingStore.ts';
-import QuillCodeEditor from "@renderer/components/QuillCodeEditor/QuillCodeEditor.jsx"
+import { useDraggingDraggingStore } from '@/stores/draggingDragging/useDraggingDraggingStore.ts';
+import { storeToRefs } from 'pinia';
+import QuillCodeEditor from "@/components/QuillCodeEditor/QuillCodeEditor.jsx"
 
 const draggingDraggingMain = defineComponent({
   props: {

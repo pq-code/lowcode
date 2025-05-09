@@ -3,65 +3,63 @@ for (let i = 0; i <= 15; i++) {
   hexList[i] = i.toString(16)
 }
 
-export function buildUUID(): string {
-  let uuid = '';
-  for (let i = 1; i <= 36; i++) {
-    if (i === 9 || i === 14 || i === 19 || i === 24) {
-      uuid += '-';
-    } else if (i === 15 || i === 20) {
-      // 使用随机数生成16进制字符，确保i=15也是随机的
-      uuid += hexList[Math.floor(Math.random() * 16)];
-    } else {
-      uuid += hexList[Math.floor(Math.random() * 16)];
-    }
-  }
-  // 如果不需要移除短横线，则无需此替换
-  // return uuid.replace(/-/g, '');
-  return uuid;
-}
+/**
+ * 生成UUID
+ * @returns {string} UUID
+ */
+export const buildUUID = (): string => {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+    const r = (Math.random() * 16) | 0;
+    const v = c === 'x' ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+};
 
-// 拷贝
-export function deepClone(e:any) {
-  let map = new Map()
-  function _deepClone(obj) {
-    if (obj === null || typeof obj !== 'object') return obj
-    if (map.has(obj)) {
-      return map.get(obj)
-    }
-    let result = Array.isArray(obj) ? [] : {}
-    map.set(obj, result)
-    for (let key in obj) {
-      if (typeof obj[key] === 'object') {
-        result[key] = _deepClone(obj[key])
-      } else {
-        result[key] = obj[key]
-      }
-    }
-    return result
+/**
+ * 深拷贝对象
+ * @param {any} obj 要拷贝的对象
+ * @returns {any} 拷贝后的新对象
+ */
+export const deepClone = (obj: any): any => {
+  if (obj === null) return null;
+  if (typeof obj !== 'object') return obj;
+  if (obj instanceof Date) return new Date(obj);
+  if (obj instanceof RegExp) return new RegExp(obj);
+  
+  // 处理数组
+  if (Array.isArray(obj)) {
+    return obj.map(item => deepClone(item));
   }
-  return _deepClone(e)
-}
+  
+  // 处理对象
+  const result: Record<string, any> = {};
+  Object.keys(obj).forEach(key => {
+    result[key] = deepClone(obj[key]);
+  });
+  return result;
+};
 
 // 后端要求参数去掉''
-export function removeEmptyStrings(e:object) {
-  let obj = e
-  if(obj['params']) {
-    obj = deepClone(obj['params'])
+export function removeEmptyStrings(e: Record<string, any>): Record<string, any> {
+  let obj = e;
+  if (obj['params']) {
+    obj = deepClone(obj['params']);
     for (let key in obj) {
       if (obj[key] === '') {
-        delete obj[key]
-      } else if (key.indexOf("Time") !== -1 && obj[key].constructor === Array ) {
+        delete obj[key];
+      } else if (key.indexOf("Time") !== -1 && Array.isArray(obj[key])) {
         obj[key] = {
           start: obj[key][0] + '00:00:00',
-          end: obj[key][1]  + '23:59:59',
+          end: obj[key][1] + '23:59:59',
         };
       }
     }
-    return { ...e, params: obj}
-  }else {
-    return obj
+    return { ...e, params: obj };
+  } else {
+    return obj;
   }
 }
+
 // 判断是否是JSOn
 export function isJsonStr(str: any) {
   if (typeof str == 'string') {
@@ -142,23 +140,22 @@ export const withInstall = <T>(component: T, alias?: string) => {
 }
 
 /**
- * @param str 需要转下划线的驼峰字符串
- * @returns 字符串下划线
+ * 驼峰转下划线
+ * @param {string} str 驼峰字符串
+ * @returns {string} 下划线字符串
  */
 export const humpToUnderline = (str: string): string => {
-  return str.replace(/([A-Z])/g, '-$1').toLowerCase()
-}
+  return str.replace(/([A-Z])/g, '_$1').toLowerCase();
+};
 
 /**
- * @param str 需要转驼峰的下划线字符串
- * @returns 字符串驼峰
+ * 下划线转驼峰
+ * @param {string} str 下划线字符串
+ * @returns {string} 驼峰字符串
  */
 export const underlineToHump = (str: string): string => {
-  if (!str) return ''
-  return str.replace(/\-(\w)/g, (_, letter: string) => {
-    return letter.toUpperCase()
-  })
-}
+  return str.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
+};
 
 /**
  * 驼峰转横杠

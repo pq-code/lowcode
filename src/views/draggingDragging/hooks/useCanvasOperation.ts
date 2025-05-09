@@ -1,9 +1,9 @@
 import { ref, onMounted, onBeforeUnmount } from "vue";
-import { useDraggingDraggingStore } from "@renderer/stores/draggingDragging/useDraggingDraggingStore";
-import { deepClone } from "@renderer/utils/index";
+import { useDraggingDraggingStore } from "@/stores/draggingDragging/useDraggingDraggingStore";
+import { deepClone } from "@/utils/index";
 import { ElMessage } from "element-plus";
 import { storeToRefs } from "pinia";
-import { editCodeConfig } from "@renderer/api/apis/lowCode/lowCode";
+import { editCodeConfig } from "@/api/apis/lowCode/lowCode";
 export default function useCanvasOperation() {
   let {
     pageJSON, // 页面所有数据

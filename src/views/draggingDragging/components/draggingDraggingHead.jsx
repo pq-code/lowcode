@@ -1,8 +1,8 @@
-import { ElButton,ElPageHeader,ElBreadcrumbItem,ElAvatar,ElTag ,ElDrawer} from 'element-plus';
+import { ElButton,ElPageHeader,ElBreadcrumbItem,ElAvatar,ElTag ,ElDrawer, ElTooltip} from 'element-plus';
 import { defineComponent, ref, watch, onMounted } from 'vue';
 import useCanvasOperation from '../hooks/useCanvasOperation';
-import CreateCode from '@renderer/packages/CreateCode';
-import router from '@renderer/router/index'
+import CreateCode from '@/packages/CreateCode';
+import router from '@/router/index'
 const draggingDraggingHead = defineComponent({
   props: {
   },

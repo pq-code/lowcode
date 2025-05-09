@@ -1,10 +1,10 @@
 import { defineComponent, ref, watch, nextTick, computed } from 'vue';
 import style from '../style/index.module.less';
-import { useDraggingDraggingStore } from '@renderer/stores/draggingDragging/useDraggingDraggingStore.ts';
+import { useDraggingDraggingStore } from '@/stores/draggingDragging/useDraggingDraggingStore.ts';
 import { VueDraggable } from 'vue-draggable-plus';
 import { TypeRenderEngine } from '../components/TypeRenderEngine';
 import { storeToRefs } from 'pinia';
-import useCanvasOperation from '@renderer/views/draggingDragging/hooks/useCanvasOperation.ts';
+import useCanvasOperation from '@/views/draggingDragging/hooks/useCanvasOperation.ts';
 import ComponentMaker from '../components/ComponentMaker.jsx';
 
 const RenderEngine = defineComponent({

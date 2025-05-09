@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import dashboardHead from '@renderer/views/dashboard/components/dashboardHead/dashboardHead.vue'
-import dashboardMain from '@renderer/views/dashboard/components/dashboardMain/dashboardMain.vue'
+import dashboardHead from '@/views/dashboard/components/dashboardHead/dashboardHead.vue'
+import dashboardMain from '@/views/dashboard/components/dashboardMain/dashboardMain.vue'
 
-// import { useMainStore } from '@renderer/stores/useMainStore'
+// import { useMainStore } from '@/stores/useMainStore'
 // const store = useMainStore()
 </script>
 <template>

@@ -1,14 +1,14 @@
 <script setup lang='ts'>
 import { onMounted, ref } from 'vue'
-import draggingDraggingL from '@renderer/views/draggingDragging/components/draggingDraggingL.jsx'
-import draggingDraggingMain from '@renderer/views/draggingDragging/components/draggingDraggingMain.jsx'
-import draggingDraggingR from '@renderer/views/draggingDragging/components/draggingDraggingR.jsx'
-import draggingDraggingHead from '@renderer/views/draggingDragging/components/draggingDraggingHead.jsx'
+import draggingDraggingL from '@/views/draggingDragging/components/draggingDraggingL.jsx'
+import draggingDraggingMain from '@/views/draggingDragging/components/draggingDraggingMain.jsx'
+import draggingDraggingR from '@/views/draggingDragging/components/draggingDraggingR.jsx'
+import draggingDraggingHead from '@/views/draggingDragging/components/draggingDraggingHead.jsx'
 import  useCanvasOperation from './hooks/useCanvasOperation';
-import { getCodeConfig } from "@renderer/api/apis/lowCode/lowCode";
+import { getCodeConfig } from "@/api/apis/lowCode/lowCode";
 import './style/draggingDraggingL.less'
 import { storeToRefs } from "pinia";
-import { useDraggingDraggingStore } from "@renderer/stores/draggingDragging/useDraggingDraggingStore";
+import { useDraggingDraggingStore } from "@/stores/draggingDragging/useDraggingDraggingStore";
 
   const store = useDraggingDraggingStore();
   const { pageJSON } = storeToRefs(store);

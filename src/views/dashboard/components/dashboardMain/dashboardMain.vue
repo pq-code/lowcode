@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import dashboardSide from '@renderer/views/dashboard/components/dashboardSide/dashboardSide.vue'
+import dashboardSide from '@/views/dashboard/components/dashboardSide/dashboardSide.vue'
 
 
 let lengthWidth = ref( window.innerWidth > 1000 ? true : false)

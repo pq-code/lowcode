@@ -1,6 +1,6 @@
-import { defineComponent, ref, watch, onMounted } from "vue";
+import { defineComponent, ref, watch, onMounted, computed } from "vue";
 import { VueDraggable } from "vue-draggable-plus";
-import { useDraggingDraggingStore } from "@renderer/stores/draggingDragging/useDraggingDraggingStore.ts";
+import { useDraggingDraggingStore } from "@/stores/draggingDragging/useDraggingDraggingStore.ts";
 
 import {
   ElRow,
