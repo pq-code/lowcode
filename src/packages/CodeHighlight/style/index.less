@@ -1,0 +1,20 @@
+.codePiece {
+  position: relative; /* 设置参照点 */
+  .codeMaskLayer {
+    position: absolute; /* 绝对定位 */
+    top: 0px;
+    padding: 10px;
+    width: calc(100% - 20px);
+    // pointer-events: none;
+    .codePiece-item {
+      height: 19.7px;
+      line-height: 19.7px;
+    }
+    .codePiece-item :hover {
+      background-color: rgba(68, 110, 243, 0.2);
+    }
+    .selected {
+      background-color: rgba(68, 110, 243, 0.2);
+    }
+  }
+}

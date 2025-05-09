@@ -1,0 +1,183 @@
+.draggingDraggingL{
+  padding: 10px;
+  min-width: 280px;
+  .draggingDraggingL-title {
+    height: 30px;
+    font-family: PingFang SC, PingFang SC;
+    font-weight: 500;
+    font-size: 18px;
+    color: #1D1D1F;
+    line-height: 26px;
+    text-align: left;
+    font-style: normal;
+    text-transform: none;
+  }
+  .draggingDraggingL-main {
+    height: 100%;
+    .draggingDraggingL-container {
+      padding: 10px;
+      margin-top: 10px;
+      // background-color: #1D1D1F;
+    }
+  }
+}
+
+
+.componentContainer {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  // grid-template-rows: 80px 80px 80px;
+  grid-gap: 2.5px;
+  .componentContainerSon {
+    height: 65px;
+    background-color: #efefef;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    font-size: 10px;
+  }
+}
+
+.draggingDraggingMain {
+  padding: 20px 60px;
+  height: calc(100% - 40px);
+  // max-height: calc(100vh - 20px);
+  max-width: calc(100vw - 690px);
+  overflow-y: auto;
+  position: relative;
+  .connections {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    left: 0;
+    color: #000;
+    .connectionsItem {
+      margin-top: 10px;
+    }
+  }
+}
+
+
+
+.draggingDraggingR {
+  height: 100%;
+  overflow-y: auto;
+  // height: calc(100% - 20px);
+  .el-input--small .el-input__wrapper {
+    background: #00000008;
+  }
+  .el-select--small .el-select__wrapper {
+    background: #00000008;
+  }
+}
+
+.form-item {
+  display: flex;
+  .form-item-label {
+    padding-right: 5px;
+    display: flex;
+    flex-direction: column;
+  }
+  .form-item-modeVlaue {
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+.RadioLabel {
+  display: flex;
+  align-items: center;
+  .RadioLabel-titel {
+    padding-right: 10px;
+  }
+}
+
+
+.draggingDragging-head {
+  height: 100%;
+  background-color: #fdfdfd;
+  box-shadow: 0px 2px 4px 0px rgb(208 208 208 / 50%);
+  z-index: 100 !important;
+  .dragging-dragging-head-center {
+    padding: 0 10px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    .dragging-dragging-head-center-l {
+      height: 50px;
+      display: flex;
+      .el-page-header {
+        line-height: 50px;
+        display: flex;
+        align-items: center;
+        .items-center {
+          line-height: 50px;
+          display: flex;
+          align-items: center;
+        }
+        .el-page-header__main {
+          margin-top: 0 !important;
+        }
+      }
+    }
+    .dragging-dragging-head-center-button {
+
+    }
+  }
+}
+
+
+
+.layout {
+  // padding: 0 10px;
+}
+
+.layoutItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  .layoutItem-title {
+    width: 100%;
+    min-width: 100px;
+    color: #7c7c7c;
+    display: flex;
+    justify-content: space-between;
+  }
+  .layoutItem-row {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    margin: 5px 0;
+    align-items: center;
+  }
+  .layoutItem-a {
+
+  }
+  .codePiece {
+    width: 100%;
+    max-height: 300px;
+    background: #eaeaea;
+    position: relative;
+    -webkit-user-select: text;
+    user-select: text;
+  }
+
+  .el-input-group__prepend {
+    padding: 0px;
+  }
+}
+.layoutItem:nth-child(n+2) {
+  margin-top: 10px;
+}
+
+.draggingDraggingR-content {
+  // height: calc(100% - 60px);
+  .draggingDraggingR-content-list {
+    padding: 0 10px;
+    height: 100%;
+    overflow-y: auto;
+  }
+}
