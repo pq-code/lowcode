@@ -1,4 +1,3 @@
-
 import { Form } from "./components/Form";
 import { Container } from "./components/Container";
 import { Table } from "./components/Table";
@@ -12,6 +11,8 @@ import { Backtop } from "./components/backtop";
 import { Breadcrumb } from "./components/Breadcrumb";
 import { Button } from "./components/Button";
 import { Search } from "./components/Search";
+import componentRegistry from './componentRegistry';
+import type { ComponentDescriptor } from './componentRegistry';
 
 // 定义组件
 const components = [
@@ -30,28 +31,29 @@ const components = [
   Search
 ];
 
-function arrayToObject(arr) {
-  return arr.reduce((obj, item) => {
-    obj[item.type] = item;
-    return obj;
-  }, {});
-}
+// 将所有组件注册到组件注册中心
+componentRegistry.registerMany(components as ComponentDescriptor[]);
 
-// 定义组件类型
-type ComponentType = typeof components[number];
+// 组件列表，用于拖拽面板展示
+const componentList: ComponentDescriptor[] = [];
 
-const componentList: ComponentType[] = [];
-
+// 将组件从注册中心加载到组件列表
 const setComponentList = () => {
-  Object.keys(componentMap).forEach((e) => {
-    componentList.push(componentMap[e]);
+  // 清空组件列表
+  componentList.length = 0;
+  
+  // 从注册中心获取所有组件描述
+  const descriptors = componentRegistry.getAllDescriptors();
+  
+  // 添加到组件列表
+  descriptors.forEach(descriptor => {
+    componentList.push(descriptor);
   });
+  
   return componentList;
-}
+};
 
-let componentMap = {} as { [key: string]: ComponentType };
-
-componentMap = arrayToObject(components);
+// 初始化组件列表
 setComponentList();
 
-export { componentList, setComponentList };
+export { componentList, setComponentList, componentRegistry };
