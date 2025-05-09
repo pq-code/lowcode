@@ -1,7 +1,7 @@
 import { defineComponent, ref, watch, onMounted } from 'vue';
 import DlockContainerOperatorPanel from '@/packages/DlockContainer/src/DlockContainerOperatorPanel.jsx'
 import FormvOperatorPanel from '@/packages/Form/src/FormOperatorPanel.jsx'
-import { ElInput, ElSwitch } from 'element-plus';
+import { ElInput, ElSwitch, ElCollapse } from 'element-plus';
 import { useDraggingDraggingStore } from '@/stores/draggingDragging/useDraggingDraggingStore.ts'
 import { storeToRefs } from 'pinia'
 import ControlPanel from '@/packages/ControlPanel/src/ControlPanel'
@@ -14,34 +14,35 @@ const draggingDraggingL = defineComponent({
     },
     // fileListMap: Object
   },
-  model: {
-    prop: 'modelValue',
-    event: 'update:modelValue',
-  },
+  emits: ['update:modelValue'],
   setup(props, { emit }) {
     const store = useDraggingDraggingStore();
     const { pageJSON, currentOperatingObject } = storeToRefs(store);
-    const draggingDraggingRRef = ref(null)
+    const draggingDraggingRRef = ref(null);
     const activeIndex = ref(0);
-    const activeNames = ref('')
+    const activeNames = ref(['1']); // 使用字符串数组作为初始值
+    
     const handleSelect = (index) => {
       activeIndex.value = index;
     };
-    const handleChange = () => {
-
-    }
+    
+    const handleChange = (val) => {
+      activeNames.value = val;
+    };
+    
     const init = () => {
 
-    }
+    };
+    
     onMounted(() => {
-      init()
+      init();
     });
 
     const TypeRender = (item) => {
       return (
         <ControlPanel item={item}></ControlPanel>
-      )
-    }
+      );
+    };
 
     const RenderEngine = (item) => {
       if (!item || JSON.stringify(item) == '{}') {
@@ -60,7 +61,7 @@ const draggingDraggingL = defineComponent({
             background: '-webkit-linear-gradient(315deg, rgb(66, 211, 146) 25%, rgb(100, 126, 255)) text',
             '-webkit-text-fill-color': 'transparent'
           }
-        }>点击中间画布区域选中要操作的对象</span> </div>
+        }>点击中间画布区域选中要操作的对象</span> </div>;
       }
 
       return (
@@ -70,14 +71,17 @@ const draggingDraggingL = defineComponent({
               ref={draggingDraggingRRef}
               className="draggingDraggingR-content-list"
             >
-              <ElCollapse vModel={activeNames.value} onChange={handleChange}>
+              <ElCollapse 
+                modelValue={activeNames.value}
+                onUpdate:modelValue={(val) => handleChange(val)}
+              >
                 {TypeRender(item)}
               </ElCollapse>
             </div>
           </div>
         </div>
-      )
-    }
+      );
+    };
 
     return () => (
       RenderEngine(currentOperatingObject.value)

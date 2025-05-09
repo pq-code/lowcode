@@ -1,5 +1,3 @@
-
-
 export const Table = {
   componentName: "tabel表格",
   type: "table",
@@ -8,7 +6,7 @@ export const Table = {
   npm: {
     exportName: "Ptabel",
     package: "@renderer/packages",
-    component: 'packages/Table/src/Table.jsx',
+    component: '@/packages/Table/src/Table.jsx',
     destructuring: true,
   },
   children: [],
@@ -192,7 +190,7 @@ export const Table = {
     },
     tableColumnProps: {
       title: '表格项',
-      component: 'packages/Table/components/TableColumnConfig.jsx',
+      component: '@/packages/Table/components/TableColumnConfig.jsx',
       children: [],
       itemList:  [
         {

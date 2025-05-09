@@ -1,5 +1,3 @@
-
-
 export const Form = {
   componentName: "表单",
   type: "Form",
@@ -7,7 +5,7 @@ export const Form = {
   group: "基础组件",
   npm: {
     exportName: "Form",
-    component: 'packages/Form/src/Form.jsx',
+    component: '@/packages/Form/src/Form.jsx',
     destructuring: true,
   },
   props: {
@@ -105,7 +103,7 @@ export const Form = {
     },
     formItemProps: {
       title: '表单项',
-      component: 'packages/Form/components/FormItemConfig.jsx',
+      component: '@/packages/Form/components/FormItemConfig.jsx',
       children: [
       ],
       itemList: [

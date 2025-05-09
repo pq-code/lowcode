@@ -2,7 +2,7 @@ import { defineComponent, ref, watch, onMounted } from 'vue';
 import componentContainer from './componentContainer'
 import { Search } from '@element-plus/icons-vue'
 import { componentList } from "@/components/materialArea/materialArea"
-import {  ElCollapse,ElCollapseItem, ElInput } from 'element-plus';
+import { ElCollapse, ElCollapseItem, ElInput } from 'element-plus';
 
 const draggingDraggingL = defineComponent({
   props: {
@@ -16,12 +16,14 @@ const draggingDraggingL = defineComponent({
     event: 'update:modelValue',
   },
   setup(props, { emit }) {
-    let activeNames = ref([0,1])
+    const activeNames = ref(['0', '1']);
     const inputValue = ref(props.modelValue);
-    const componentItemList = ref([])
-    const handleChange = () => {
-
-    }
+    const componentItemList = ref([]);
+    
+    const handleChange = (val) => {
+      activeNames.value = val;
+    };
+    
     const init = () => {
       let map = new Map()
       componentList.forEach(element => {
@@ -36,6 +38,7 @@ const draggingDraggingL = defineComponent({
       });
       componentItemList.value = Object.fromEntries(map);
     }
+    
     onMounted(() => {
       init()
     });
@@ -44,17 +47,22 @@ const draggingDraggingL = defineComponent({
       <div className='draggingDraggingL'>
         <div className='draggingDraggingL-title'> 组件库 </div>
         <div className='draggingDraggingL-main'>
-          <ElInput placeholder="搜索组件库" suffix-icon={Search} > </ElInput>
+          <ElInput placeholder="搜索组件库" suffix-icon={Search} />
           <div className='draggingDraggingL-container'>
-            <ElCollapse vModel={activeNames} onChange={handleChange}>
-              {
-                (Object.keys(componentItemList.value).map((key, index) => {
-                 return <ElCollapseItem title={key} name={index}>
-                          <componentContainer componentList={componentItemList.value[key]}></componentContainer>
-                        </ElCollapseItem>
-                }))
-              }
-          </ElCollapse>
+            <ElCollapse 
+              modelValue={activeNames.value}
+              onUpdate:modelValue={(val) => handleChange(val)}
+            >
+              {Object.keys(componentItemList.value).map((key, index) => (
+                <ElCollapseItem 
+                  key={index}
+                  title={key} 
+                  name={String(index)}
+                >
+                  <componentContainer componentList={componentItemList.value[key]}></componentContainer>
+                </ElCollapseItem>
+              ))}
+            </ElCollapse>
           </div>
         </div>
       </div>

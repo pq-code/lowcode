@@ -31,16 +31,18 @@ const componentContainer = defineComponent({
       default: () => [],
     },
   },
-  model: {
-    prop: "modelValue",
-    event: "update:modelValue",
-  },
+  emits: ["update:modelValue"],
   setup(props, { emit }) {
     let { currentDragObject } = useDraggingDraggingStore();
     const inputValue = ref(props.modelValue);
     const isDisabled = false;
 
     const componentContainerSon = computed(() => props.componentList);
+    const componentListModel = ref(props.componentList);
+    
+    watch(() => props.componentList, (newVal) => {
+      componentListModel.value = newVal;
+    }, { deep: true });
 
     const init = () => {};
 
@@ -55,9 +57,9 @@ const componentContainer = defineComponent({
     return () => (
       <VueDraggable
         className="componentContainer"
-        vModel={componentContainerSon.value}
+        modelValue={componentContainerSon.value}
         animation={200}
-        group = {{ name: "people", pull: "clone", put: false }}
+        group={{ name: "people", pull: "clone", put: false }}
         sort={false}
       >
         {componentContainerSon.value.map((item, index) => {
