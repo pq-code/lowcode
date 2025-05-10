@@ -23,6 +23,11 @@ for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
     app.component(key, component)
   }
 
+// 初始化核心模块
+import { initCore } from './core';
+initCore().catch(err => {
+  console.error('[系统初始化] 初始化核心模块失败', err);
+});
 
 // 挂载应用
 app.mount('#app')

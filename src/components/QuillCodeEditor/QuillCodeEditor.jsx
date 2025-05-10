@@ -45,7 +45,7 @@ const QuillCodeEditor = defineComponent({
     const handleInput = (e) => {
       handleChange(e.target.value);
     };
-    
+
     return () => (
       <div class="quill-code-editor" style={{ height: props.height }}>
         <textarea

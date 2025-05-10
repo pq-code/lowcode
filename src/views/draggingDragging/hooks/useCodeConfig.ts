@@ -35,6 +35,12 @@ export default function useCanvasOperation() {
 
   // 渲染前收集配置信息
   const collectProps = (item: any) => {
+    // 如果item为undefined或null，返回空对象
+    if (!item) {
+      console.warn('收集props时item为空', item);
+      return {};
+    }
+    
     const vnodeProps: any = {};
 
     const convertKey = (key: string) => {
@@ -48,11 +54,14 @@ export default function useCanvasOperation() {
     Object.keys(item).forEach((key) => {
       if (key.includes('Props')) {
         const resultProps: any = {};
-        item[key]?.children.forEach((child: any) => {
-          if(!child.key) return
+        // 添加对item[key]和item[key].children的检查
+        if (item[key] && Array.isArray(item[key].children)) {
+          item[key].children.forEach((child: any) => {
+            if(!child || !child.key) return;
           const newKey = convertKey(child.key);
           resultProps[newKey] = child.value;
         });
+        }
 
         vnodeProps[key] = {
           props: resultProps,

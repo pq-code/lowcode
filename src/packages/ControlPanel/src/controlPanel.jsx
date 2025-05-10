@@ -31,7 +31,9 @@ const DlockContainerOperatorPanel = defineComponent({
 
     const component = (url) => {
       return defineAsyncComponent({
-        loader: () => import(/* @vite-ignore */'../../../' + url),
+        loader: () => {
+          return import(/* @vite-ignore */'../../../' + url)
+        },
         delay: 200,
       })
     }

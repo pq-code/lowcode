@@ -25,6 +25,10 @@ const ComponentMaker = defineComponent({
     const store = useDraggingDraggingStore();
     const { pageJSON, currentOperatingObject } = storeToRefs(store);
 
+    // 调试信息
+    console.log('ComponentMaker item:', props.item);
+    console.log('ComponentMaker children:', slots.default ? slots.default() : 'no children');
+
     const deleteObject = () => {
       if (!currentOperatingObject.value) {
         console.error("当前操作对象为空，无法删除");
@@ -50,6 +54,7 @@ const ComponentMaker = defineComponent({
     const clickContainer = (e) => {
       e.stopPropagation();
       currentOperatingObject.value = props.item;
+      console.log('选中组件:', props.item);
     };
 
     const handleMouseEnter = (e) => {
@@ -78,10 +83,15 @@ const ComponentMaker = defineComponent({
       }
     };
 
+    // 当组件从物料面板拖入时，确保其有children字段
+    if (!props.item.children) {
+      props.item.children = [];
+    }
+
     const renderRootVnode = () => {
       return (
         <VueDraggable
-          vModel={props.item}
+          vModel={props.item.children}
           group={{ name: "people", pull: true, put: true }}
           ghostClass="ghost"
           chosenClass="chosen"

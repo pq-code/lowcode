@@ -5,7 +5,7 @@ export const Table = {
   group: "基础组件",
   npm: {
     exportName: "Ptabel",
-    package: "@renderer/packages",
+    package: "@/packages",
     component: '@/packages/Table/src/Table.jsx',
     destructuring: true,
   },

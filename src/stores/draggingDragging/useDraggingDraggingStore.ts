@@ -141,9 +141,38 @@ export const useDraggingDraggingStore = defineStore('draggingDraggingStore', () 
       style: '',
     },
     children: [
-    ]
+      {
+        "componentName": "容器",
+        "type": "container",
+        "icon": "icon-fuxuankuangkong",
+        "group": "基础组件",
+        "key": "container_" + Math.random().toString(36).substring(2, 9),
+        "props": {
+          "divProps": {
+            "title": "容器属性",
+            "children": [
+              {
+                "label": "高度",
+                "type": "input",
+                "value": "300",
+                "key": "csheight"
+              },
+              {
+                "label": "文字大小",
+                "type": "input",
+                "value": "14",
+                "key": "csfontSize"
+              }
+            ],
+            "style": {}
+          },
+          "className": "container",
+          "style": ""
+        },
+        "children": []
   }
-  )
+    ]
+  })
   const currentDragObject = ref({}) // 当前拖拽对象
 
   const currentEnvironment = ref(true) // 当前环境

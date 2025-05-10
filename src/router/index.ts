@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import type { RouteRecordRaw, NavigationGuardNext, RouteLocationNormalized } from 'vue-router'
+import materialPlatformRoutes from './material-platform.routes'
 
 // 定义meta类型
 declare module 'vue-router' {
@@ -18,18 +19,30 @@ export const routerMap = [
     }
   },
   {
-    path: '/dragging-dragging',
-    name: 'DraggingDragging',
+    path: '/lowcode',
+    name: 'LowCode',
     meta: {
       title: '低代码编辑器'
+    }
+  },
+  {
+    path: '/material-platform',
+    name: 'MaterialPlatform',
+    meta: {
+      title: '物料平台'
     }
   }
 ]
 
-const routes: Array<RouteRecordRaw> = [
+// 基础路由
+const baseRoutes: Array<RouteRecordRaw> = [
   {
     path: '/',
-    redirect: '/dashboard'
+    name: 'Home',
+    component: () => import('@/views/home/Home.vue'),
+    meta: {
+      title: '低代码开发系统'
+    }
   },
   {
     path: '/dashboard',
@@ -40,8 +53,8 @@ const routes: Array<RouteRecordRaw> = [
     }
   },
   {
-    path: '/dragging-dragging',
-    name: 'DraggingDragging',
+    path: '/lowcode',
+    name: 'LowCode',
     component: () => import('@/views/draggingDragging/draggingDragging.vue'),
     meta: {
       title: '低代码编辑器'
@@ -50,8 +63,14 @@ const routes: Array<RouteRecordRaw> = [
   // 404页面
   {
     path: '/:pathMatch(.*)*',
-    redirect: '/dashboard'
+    redirect: '/'
   }
+]
+
+// 合并所有路由
+const routes: Array<RouteRecordRaw> = [
+  ...baseRoutes,
+  ...materialPlatformRoutes
 ]
 
 const router = createRouter({
@@ -62,7 +81,7 @@ const router = createRouter({
 // 路由前置守卫
 router.beforeEach((to: RouteLocationNormalized, from: RouteLocationNormalized, next: NavigationGuardNext) => {
   // 设置页面标题
-  document.title = `${to.meta.title || '低代码平台'}`
+  document.title = `${to.meta.title || 'Vue3 低代码开发系统'}`
   next()
 })
 

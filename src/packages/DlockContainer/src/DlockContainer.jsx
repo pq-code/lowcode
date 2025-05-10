@@ -7,10 +7,20 @@ import useCodeConfig from '@/views/draggingDragging/hooks/useCodeConfig.ts';
 
 const DlockContainer = defineComponent({
   props: {
-    modelValue: {
+    // 兼容直接传入props的情况
+    divProps: {
       type: Object,
       default: () => ({})
     },
+    className: {
+      type: String,
+      default: ''
+    },
+    style: {
+      type: String,
+      default: ''
+    },
+    // 兼容通过item传入的情况
     item: {
       type: Object,
       default: () => ({})
@@ -20,23 +30,42 @@ const DlockContainer = defineComponent({
       default: () => []
     }
   },
-  model: {
-    prop: 'modelValue',
-    event: 'update:modelValue',
-  },
   setup(props, { emit, slots }) {
     const { collectProps } = useCodeConfig();
 
     const store = useDraggingDraggingStore();
     const { pageJSON } = storeToRefs(store);
-    const whetherYouCanDrag = computed(() => pageJSON.value.whetherYouCanDrag);
+    const whetherYouCanDrag = computed(() => pageJSON.value?.whetherYouCanDrag);
+
+    // 调试信息
+    console.log('DlockContainer props:', props);
+    console.log('DlockContainer item:', props.item);
+    console.log('DlockContainer item.props:', props.item?.props);
 
     const renderComponent = () => {
-      const vnodeProps = collectProps(props.item.props); // 收集组件属性
-      console.log('vnodeProps', vnodeProps);
+      // 优先使用item.props，如果没有则使用直接传入的props
+      let propsToUse = {};
+      
+      // 如果是从物料面板拖过来的，使用item.props
+      if (props.item && props.item.props) {
+        propsToUse = props.item.props;
+      } 
+      // 如果是直接传入的props（属性打平的情况）
+      else if (props.divProps) {
+        propsToUse = {
+          divProps: props.divProps,
+          className: props.className,
+          style: props.style
+        };
+      }
+      
+      console.log('DlockContainer propsToUse:', propsToUse);
+      const vnodeProps = collectProps(propsToUse);
+      console.log('DlockContainer vnodeProps', vnodeProps);
 
       const Dom = [];
 
+      // 添加标题，如果有的话
       if (vnodeProps.titleProps?.props?.title) {
         const titleDom = (
           <div className={[vnodeProps?.titleProps?.props['className'], style.DivContainerTitle].filter(Boolean).join(' ')} style={vnodeProps.titleProps.style}>
@@ -45,9 +74,14 @@ const DlockContainer = defineComponent({
         );
         Dom.unshift(titleDom);
       }
-      let childrenS = slots.default()
-      if (vnodeProps.titleProps?.props?.title || (slots && slots.default && childrenS[0].children.length)) {
-        Dom.push(slots.default());
+      
+      // 处理子组件
+      let childrenS = slots.default ? slots.default() : [];
+      console.log('DlockContainer slots:', slots);
+      console.log('DlockContainer childrenS:', childrenS);
+      
+      if (vnodeProps.titleProps?.props?.title || (slots.default && childrenS && childrenS.length && childrenS[0]?.children?.length)) {
+        Dom.push(slots.default ? slots.default() : []);
       } else {
         Dom.push(
           <div className={style.DivContainerNosolt}>
@@ -56,15 +90,26 @@ const DlockContainer = defineComponent({
         );
       }
 
+      // 兼容多种情况的容器属性
       const containerProps = {
-        id: props.item.key,
-        className: [vnodeProps?.divProps?.props['className'], style.DivContainer].filter(Boolean).join(' '),
-        style: vnodeProps?.divProps?.style
+        id: props.item?.key || '',
+        className: [
+          vnodeProps?.divProps?.props?.['className'] || 
+          props.className || 
+          'container', 
+          style.DivContainer
+        ].filter(Boolean).join(' '),
+        style: vnodeProps?.divProps?.style || props.style || ''
       };
 
-      return whetherYouCanDrag.value ? (
+      console.log('DlockContainer containerProps:', containerProps);
+
+      // 判断是否可拖拽
+      const canDrag = whetherYouCanDrag && whetherYouCanDrag.value !== false;
+      
+      return canDrag ? (
         <VueDraggable
-          v-model={props.item.children}
+          modelValue={props.item?.children || []}
           group={{ name: "people", pull: true, put: true }}
           ghostClass="ghost"
           chosenClass="chosen"
