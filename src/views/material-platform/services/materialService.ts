@@ -2,6 +2,7 @@
  * 物料平台服务
  * 负责与后端API通信，获取和管理物料数据
  */
+import { getMaterialByType, getAllMaterials as getCoreAllMaterials } from '@/core/material/services/MaterialService';
 
 // 物料分组类型
 export interface MaterialGroup {
@@ -23,7 +24,7 @@ export interface Material {
   version: string;
   group: string;
   tags?: string[];
-  props?: Record<string, any>;
+  props?: Record<string, any>;  // 属性配置
   source?: {
     type: string;
     import?: {
@@ -72,12 +73,23 @@ export async function fetchMaterialGroups(): Promise<MaterialGroup[]> {
  */
 export async function fetchMaterialsByGroup(groupId: string): Promise<Material[]> {
   try {
-    // 实际项目中应该从API获取
-    // const url = groupId === 'all' ? '/api/materials' : `/api/materials?groupId=${groupId}`;
-    // const response = await fetch(url);
-    // return await response.json();
+    // 尝试从核心物料服务获取物料
+    const coreMaterials = getCoreAllMaterials();
     
-    // 模拟数据
+    // 如果有核心物料数据，按分组筛选并返回
+    if (coreMaterials && coreMaterials.length > 0) {
+      if (groupId === 'all') {
+        // 转换为平台物料格式
+        return coreMaterials.map(convertToMaterial);
+      } else {
+        // 按分组筛选
+        return coreMaterials
+          .filter(m => m.group === groupId)
+          .map(convertToMaterial);
+      }
+    }
+    
+    // 如果没有核心物料或为空，使用模拟数据
     if (groupId === 'all') {
       return generateMockMaterials(10);
     } else {
@@ -96,11 +108,20 @@ export async function fetchMaterialsByGroup(groupId: string): Promise<Material[]
  */
 export async function fetchMaterialDetail(materialId: string): Promise<Material | null> {
   try {
-    // 实际项目中应该从API获取
-    // const response = await fetch(`/api/materials/${materialId}`);
-    // return await response.json();
+    // 尝试从核心物料服务获取物料
+    const coreMaterials = getCoreAllMaterials();
     
-    // 模拟数据
+    // 从ID中提取类型（假设ID的格式是 material_{type}_{index} 或直接是type）
+    const typeMatch = materialId.match(/material_([^_]+)/) || materialId.match(/^([^_]+)_/);
+    const type = typeMatch ? typeMatch[1] : materialId;
+    
+    // 首先尝试通过类型从核心物料服务获取
+    const coreMaterial = getMaterialByType(type);
+    if (coreMaterial) {
+      return convertToMaterial(coreMaterial);
+    }
+    
+    // 如果没有找到，使用模拟数据
     const mockMaterials = generateMockMaterials(20);
     return mockMaterials.find(m => m.id === materialId) || null;
   } catch (error) {
@@ -140,6 +161,27 @@ export async function createMaterialGroup(group: Partial<MaterialGroup>): Promis
   }
 }
 
+/**
+ * 转换核心物料到平台物料格式
+ */
+function convertToMaterial(coreMaterial: any): Material {
+  return {
+    id: `material_${coreMaterial.type}`,
+    type: coreMaterial.type,
+    name: coreMaterial.name,
+    description: coreMaterial.description,
+    icon: coreMaterial.icon,
+    version: coreMaterial.version || '1.0.0',
+    group: coreMaterial.group,
+    tags: coreMaterial.tags,
+    props: coreMaterial.props,
+    source: coreMaterial.source,
+    createTime: coreMaterial.createTime || new Date().toISOString(),
+    updateTime: coreMaterial.updateTime || new Date().toISOString(),
+    creator: coreMaterial.creator || 'system'
+  };
+}
+
 // 生成模拟物料数据
 function generateMockMaterials(count: number, groupId?: string): Material[] {
   const groups = ['base', 'layout', 'form', 'data', 'feedback'];
@@ -153,6 +195,25 @@ function generateMockMaterials(count: number, groupId?: string): Material[] {
     version: '1.0.0',
     group: groupId || groups[Math.floor(Math.random() * groups.length)],
     tags: ['component', groupId || 'common'],
+    props: {
+      type: { 
+        type: 'enum', 
+        title: '类型',
+        default: 'primary',
+        enum: ['primary', 'success', 'warning', 'danger', 'info']
+      },
+      size: {
+        type: 'enum',
+        title: '尺寸',
+        default: 'default',
+        enum: ['large', 'default', 'small']
+      },
+      text: {
+        type: 'string',
+        title: '文本',
+        default: '示例按钮'
+      }
+    },
     source: {
       type: 'local',
       import: {
