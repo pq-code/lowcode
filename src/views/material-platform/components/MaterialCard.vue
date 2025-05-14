@@ -60,7 +60,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, defineComponent } from 'vue';
 import { More, Document, Menu } from '@element-plus/icons-vue';
 import type { Material } from '../services/materialService';
 
@@ -125,6 +125,11 @@ const handleCommand = (command: string) => {
 interface MaterialWithProps extends Material {
   props?: Record<string, any>;
 }
+
+// 添加默认导出
+defineComponent({
+  name: 'MaterialCard'
+});
 </script>
 
 <style scoped lang="less">

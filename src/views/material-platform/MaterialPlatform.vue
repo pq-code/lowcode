@@ -130,11 +130,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue';
+import { ref, computed, onMounted, watch, defineAsyncComponent } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { Plus, Folder, Files, Search, Upload } from '@element-plus/icons-vue';
 import { ElMessage } from 'element-plus';
 import { fetchMaterialGroups, fetchMaterialsByGroup } from './services/materialService';
+
+// 异步加载组件
+const MaterialCard = defineAsyncComponent(() => import('./components/MaterialCard.vue'));
 
 // 路由
 const router = useRouter();
@@ -198,6 +201,7 @@ const loadMaterials = async (groupId: string = 'all') => {
     } else {
       currentGroupName.value = '';
     }
+    console.log(materials.value);
   } catch (error) {
     console.error('获取物料数据失败', error);
     ElMessage.error('获取物料数据失败');
@@ -232,12 +236,7 @@ const activeMenu = computed(() => {
 
 // 过滤物料
 const filteredMaterials = computed(() => {
-  if (!searchKey.value) return materials.value;
-  
-  return materials.value.filter(material => 
-    material.name.toLowerCase().includes(searchKey.value.toLowerCase()) ||
-    material.description.toLowerCase().includes(searchKey.value.toLowerCase())
-  );
+  return materials.value;
 });
 
 // 处理分组选择
@@ -381,7 +380,7 @@ onMounted(() => {
 }
 
 .main-content {
-  padding: 0px;
+  padding: 20px;
   background-color: #f5f7fa;
   
   .materials-header {
