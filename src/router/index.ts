@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import type { RouteRecordRaw, NavigationGuardNext, RouteLocationNormalized } from 'vue-router'
-import materialPlatformRoutes from './material-platform.routes'
+import { materialPlatformRoutes } from './material-platform.routes'
 
 // 定义meta类型
 declare module 'vue-router' {

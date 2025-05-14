@@ -1,0 +1,112 @@
+/**
+ * 组件包装器样式
+ */
+
+.component-wrapper {
+  position: relative;
+  border: 1px solid transparent;
+  transition: all 0.2s;
+  user-select: none;
+}
+
+.component-wrapper--outline {
+  border: 1px dashed #ccc;
+}
+
+.component-wrapper--selected {
+  border: 1px solid #409eff;
+  box-shadow: 0 0 10px rgba(64, 158, 255, 0.2);
+}
+
+.component-wrapper__placeholder {
+  min-height: 30px;
+  background-color: rgba(64, 158, 255, 0.1);
+  border: 1px dashed #409eff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 12px;
+  color: #409eff;
+}
+
+.component-wrapper__toolbar {
+  position: absolute;
+  top: -22px;
+  left: 0;
+  height: 22px;
+  background-color: #409eff;
+  color: white;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  z-index: 1000;
+  padding: 0 5px;
+  border-radius: 3px 3px 0 0;
+}
+
+.component-wrapper__toolbar-name {
+  margin-right: 10px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 150px;
+}
+
+.component-wrapper__toolbar-button {
+  margin-left: 5px;
+  cursor: pointer;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.component-wrapper__toolbar-button:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+}
+
+.component-wrapper__drop-indicator {
+  position: absolute;
+  background-color: #409eff;
+  z-index: 900;
+  pointer-events: none;
+}
+
+.component-wrapper__drop-indicator--horizontal {
+  height: 2px;
+  left: 0;
+  right: 0;
+}
+
+.component-wrapper__drop-indicator--before {
+  top: 0;
+}
+
+.component-wrapper__drop-indicator--after {
+  bottom: 0;
+}
+
+.component-wrapper__drop-indicator--vertical {
+  width: 2px;
+  top: 0;
+  bottom: 0;
+}
+
+.component-wrapper__drop-indicator--inside {
+  border: 2px solid #409eff;
+  background-color: transparent;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+
+.component-wrapper--dragging {
+  opacity: 0.5;
+}
+
+.component-wrapper--dragover {
+  border: 1px dashed #409eff;
+} 

@@ -1,0 +1,61 @@
+/**
+ * 渲染引擎样式
+ */
+
+.render-engine {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: #f5f7fa;
+}
+
+.render-engine__canvas {
+  min-height: 100%;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.render-engine__placeholder {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+  border: 2px dashed #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+  color: #999;
+  background-color: rgba(255, 255, 255, 0.8);
+}
+
+.render-engine__placeholder-icon {
+  font-size: 48px;
+  margin-bottom: 10px;
+  color: #ccc;
+}
+
+.render-engine__placeholder-text {
+  font-size: 16px;
+  color: #999;
+}
+
+.render-engine__ghost {
+  position: absolute;
+  background-color: rgba(64, 158, 255, 0.1);
+  border: 1px dashed #409eff;
+  pointer-events: none;
+  z-index: 1000;
+}
+
+.render-engine--design {
+  border: 1px solid #ddd;
+}
+
+.render-engine--preview {
+  border: none;
+}
+
+.render-engine--runtime {
+  border: none;
+  background-color: transparent;
+} 

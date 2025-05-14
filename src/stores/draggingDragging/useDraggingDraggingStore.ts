@@ -1,7 +1,6 @@
 import { ref} from 'vue'
 import { defineStore } from 'pinia'
 
-
 export const useDraggingDraggingStore = defineStore('draggingDraggingStore', () => {
 
 // 页面JSON
@@ -192,5 +191,4 @@ export const useDraggingDraggingStore = defineStore('draggingDraggingStore', () 
     historyOperatingObject,
     currentOperatingObjectIndex,
   }
-
 })

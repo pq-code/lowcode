@@ -1,24 +1,40 @@
 /**
- * 系统核心模块入口
- * 统一导出物料和渲染引擎等核心功能
+ * 核心模块入口文件
  */
 
-// 导出物料模块
-export * from './material';
+// 导出物料平台服务
+export { MaterialRegistry } from './material/services/material-registry';
+export { MaterialAssetsService } from './material/services/material-assets';
+
+// 导出渲染引擎
+export { default as RenderEngine } from './render/render-engine';
+export { default as ComponentWrapper } from './render/component-wrapper';
+
+// 导出类型定义
+export * from './material/types';
+export * from './material/types/enhanced';
+export * from './render/types';
+
+// 导入样式
+import './render/styles/component-wrapper.css';
+import './render/styles/render-engine.css';
 
 /**
  * 初始化核心模块
+ * @returns 初始化Promise
  */
 export async function initCore(): Promise<void> {
-  console.log('[核心模块] 开始初始化');
+  console.log('[系统初始化] 初始化核心模块');
   
-  // 导入物料模块初始化函数
-  const { initMaterial } = await import('./material');
-  
-  // 初始化物料模块
-  await initMaterial();
-  
-  // 这里可以初始化其他核心模块，如渲染引擎等
-  
-  console.log('[核心模块] 初始化完成');
-} 
+  // 执行核心模块初始化逻辑
+  try {
+    // 注册全局组件
+    // 加载基础配置
+    // 其他初始化工作...
+    
+    console.log('[系统初始化] 核心模块初始化完成');
+  } catch (error) {
+    console.error('[系统初始化] 核心模块初始化失败', error);
+    throw error;
+  }
+}

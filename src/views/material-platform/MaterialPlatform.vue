@@ -1,6 +1,6 @@
 <template>
   <div class="material-platform">
-    <el-container>
+    <el-container >
       <!-- 头部导航 -->
       <el-header height="60px" class="header">
         <div class="logo">
@@ -130,11 +130,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { Plus, Folder, Files, Search, Upload } from '@element-plus/icons-vue';
 import { ElMessage } from 'element-plus';
-import MaterialCard from './components/MaterialCard.vue';
 import { fetchMaterialGroups, fetchMaterialsByGroup } from './services/materialService';
 
 // 路由
@@ -147,19 +146,6 @@ const materials = ref<any[]>([]);
 const searchKey = ref('');
 const activeGroup = ref('all');
 const currentGroupName = ref('');
-const isRouterViewActive = computed(() => route.path !== '/material-platform');
-
-// 分组对话框
-const createGroupDialogVisible = ref(false);
-const groupForm = ref({
-  name: '',
-  description: ''
-});
-
-// 菜单激活状态
-const activeMenu = computed(() => {
-  return route.path;
-});
 
 // 获取分组数据
 const loadGroups = async () => {
@@ -217,6 +203,32 @@ const loadMaterials = async (groupId: string = 'all') => {
     ElMessage.error('获取物料数据失败');
   }
 };
+
+const isRouterViewActive = computed(() => {
+  // 只有当路径不是/material-platform/和/material-platform时才显示路由视图
+  return route.path !== '/material-platform/' && route.path !== '/material-platform';
+});
+
+// 监听路由变化，如果是根路径则重定向到materials
+watch(() => route.path, (path) => {
+  if (path === '/material-platform' || path === '/material-platform/') {
+    // 不再重定向，而是在当前页面显示物料列表
+    activeGroup.value = 'all';
+    loadMaterials('all');
+  }
+}, { immediate: true });
+
+// 分组对话框
+const createGroupDialogVisible = ref(false);
+const groupForm = ref({
+  name: '',
+  description: ''
+});
+
+// 菜单激活状态
+const activeMenu = computed(() => {
+  return route.path;
+});
 
 // 过滤物料
 const filteredMaterials = computed(() => {
@@ -338,6 +350,7 @@ onMounted(() => {
 .main-container {
   flex: 1;
   height: calc(100vh - 60px);
+  
 }
 
 .sidebar {
@@ -368,7 +381,7 @@ onMounted(() => {
 }
 
 .main-content {
-  padding: 20px;
+  padding: 0px;
   background-color: #f5f7fa;
   
   .materials-header {

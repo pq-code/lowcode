@@ -3,7 +3,13 @@ import { defineComponent, ref, watch, onMounted } from 'vue';
 import useCanvasOperation from '../hooks/useCanvasOperation';
 import CreateCode from '@/packages/CreateCode';
 import router from '@/router/index'
+import { storeToRefs } from 'pinia';
+import { useDraggingDraggingStore } from '@/stores/draggingDragging/useDraggingDraggingStore';
+import { RenderMode } from '@/core/render';
+import '../style/draggingDraggingHead.less';
+
 const draggingDraggingHead = defineComponent({
+  name: 'DraggingDraggingHead',
   props: {
   },
   model: {
@@ -18,6 +24,13 @@ const draggingDraggingHead = defineComponent({
       backHistoryOperatingObject
     } = useCanvasOperation()
 
+    // 从状态管理获取数据
+    const store = useDraggingDraggingStore();
+    const { pageJSON } = storeToRefs(store);
+    
+    // 渲染模式
+    const renderMode = ref(RenderMode.DESIGN);
+    
     const onBack = () => {
       router.push({name:'dashboard'})
     }
@@ -30,55 +43,80 @@ const draggingDraggingHead = defineComponent({
     onMounted(() => {
     });
 
+    // 保存页面
+    const handleSave = () => {
+      // 实际应用中，这里会调用API保存页面数据
+      console.log('保存页面数据:', pageJSON.value);
+      alert('页面保存成功');
+    };
+    
+    // 预览页面
+    const handlePreview = () => {
+      if (renderMode.value === RenderMode.DESIGN) {
+        renderMode.value = RenderMode.PREVIEW;
+      } else {
+        renderMode.value = RenderMode.DESIGN;
+      }
+      
+      store.setRenderMode(renderMode.value);
+    };
+    
+    // 导出代码
+    const handleExportCode = () => {
+      // 实际应用中，这里会调用代码生成服务
+      console.log('导出代码:', pageJSON.value);
+      alert('代码导出成功');
+    };
+    
+    // 清空页面
+    const handleClear = () => {
+      if (confirm('确定要清空页面吗？此操作不可恢复。')) {
+        store.resetPage();
+      }
+    };
+
     const vnode = () => {
       return (
-        <div class="dragging-dragging-head-center">
-          <div className='dragging-dragging-head-center-l'>
-            <ElPageHeader onBack={onBack}>
-              <div class="flex items-center">
-                <ElAvatar
-                  class="mr-3"
-                  size={32}
-                  src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png"
-                />
-                <span class="text-large font-600 mr-3" style={
-                  {
-                    fontSize: '13px',
-                    fontWeight: 600,
-                    color: '#333',
-                    padding: '0 5px',
-                    color: 'rgb(51, 51, 51)',
-                    padding: '0px 5px',
-                    background: '-webkit-linear-gradient(315deg, #42d392 25%, #647eff)',
-                    '-webkit-background-clip': 'text',
-                    '-webkit-text-fill-color': 'transparent',
-                  }
-                }> 低代码平台 </span>
-                <div class="flex items-center">
-                <ElButton text='primary'>
-                  <i className='iconfont icon-caidan2'></i>
-                </ElButton>
-                </div>
-              </div>
-            </ElPageHeader>
+        <div class="dragging-dragging-head">
+          <div class="logo">
+            <span>Vue3 低代码平台</span>
           </div>
-          <div className='dragging-dragging-head-center-button'>
-          <ElTooltip effect="dark" placement="top-start" content="撤销">
-            <ElButton text='primary'>
-              <i className='iconfont icon-houtui' onClick={backHistoryOperatingObject}></i>
-            </ElButton>
-          </ElTooltip>
-          <ElTooltip effect="dark" placement="top-start" content="恢复">
-            <ElButton text='primary'>
-            <i className='iconfont icon-jiantouqianjin' onClick={upHistoryOperatingObject}></i>
-            </ElButton>
-          </ElTooltip>
-            <ElButton onClick={clearHistoryOperatingObject}>重做</ElButton>
-            <ElButton onClick={foundCode} type="primary">预览</ElButton>
-            <ElButton onClick={foundCode} type="primary">代码生成</ElButton>
+          
+          <div class="toolbar">
+            <div class="toolbar-group">
+              <button 
+                class={['toolbar-button', { active: renderMode.value === RenderMode.PREVIEW }]}
+                onClick={handlePreview}
+              >
+                {renderMode.value === RenderMode.DESIGN ? '预览' : '编辑'}
+              </button>
+              
+              <button 
+                class="toolbar-button"
+                onClick={handleSave}
+              >
+                保存
+              </button>
+              
+              <button 
+                class="toolbar-button"
+                onClick={handleExportCode}
+              >
+                导出代码
+              </button>
+              
+              <button 
+                class="toolbar-button danger"
+                onClick={handleClear}
+              >
+                清空
+              </button>
+            </div>
           </div>
-
-          <CreateCode vModel={drawer.value}></CreateCode>
+          
+          <div class="user-info">
+            <span>当前编辑: {pageJSON.value?.name || '新页面'}</span>
+          </div>
         </div>
       )
     }

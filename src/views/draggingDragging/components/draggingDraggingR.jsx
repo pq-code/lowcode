@@ -1,92 +1,219 @@
-import { defineComponent, ref, watch, onMounted } from 'vue';
-import DlockContainerOperatorPanel from '@/packages/DlockContainer/src/DlockContainerOperatorPanel.jsx'
-import FormvOperatorPanel from '@/packages/Form/src/FormOperatorPanel.jsx'
-import { ElInput, ElSwitch, ElCollapse } from 'element-plus';
-import { useDraggingDraggingStore } from '@/stores/draggingDragging/useDraggingDraggingStore.ts'
-import { storeToRefs } from 'pinia'
-import ControlPanel from '@/packages/ControlPanel/src/ControlPanel'
+import { defineComponent, ref, computed, watch } from 'vue';
+import { storeToRefs } from 'pinia';
+import { useDraggingDraggingStore } from '@/stores/draggingDragging/useDraggingDraggingStore';
+import { MaterialRegistry } from '@/core/material';
+import { ComponentUtils } from '@/core/material';
+import '../style/draggingDraggingR.less';
 
-const draggingDraggingL = defineComponent({
-  props: {
-    modelValue: {
-      type: Object,
-      default: () => { }
-    },
-    // fileListMap: Object
-  },
-  emits: ['update:modelValue'],
-  setup(props, { emit }) {
+export default defineComponent({
+  name: 'DraggingDraggingR',
+  
+  setup() {
+    // 从状态管理获取页面数据和选中组件
     const store = useDraggingDraggingStore();
-    const { pageJSON, currentOperatingObject } = storeToRefs(store);
-    const draggingDraggingRRef = ref(null);
-    const activeIndex = ref(0);
-    const activeNames = ref(['1']); // 使用字符串数组作为初始值
+    const { pageJSON, selectedComponentId } = storeToRefs(store);
     
-    const handleSelect = (index) => {
-      activeIndex.value = index;
-    };
-    
-    const handleChange = (val) => {
-      activeNames.value = val;
-    };
-
-    const init = () => {
-
-    };
-    
-    onMounted(() => {
-      init();
-    });
-
-    const TypeRender = (item) => {
-      return (
-        <ControlPanel item={item}></ControlPanel>
-      );
-    };
-
-    const RenderEngine = (item) => {
-      if (!item || JSON.stringify(item) == '{}') {
-        return <div style={{
-          height: '100%',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center'
-        }}> <span style={
-          {
-            'text-align': 'center',
-            'font-size': '23px',
-            'font-weight': 600,
-            color: 'rgb(51, 51, 51)',
-            padding: '0px 5px',
-            background: '-webkit-linear-gradient(315deg, rgb(66, 211, 146) 25%, rgb(100, 126, 255)) text',
-            '-webkit-text-fill-color': 'transparent'
-          }
-        }>点击中间画布区域选中要操作的对象</span> </div>;
+    // 当前编辑的组件节点
+    const currentNode = computed(() => {
+      if (!selectedComponentId.value || !pageJSON.value || !pageJSON.value.root) {
+        return null;
       }
-
-      return (
-        <div className="draggingDraggingR">
-          <div className="draggingDraggingR-content">
-            <div
-              ref={draggingDraggingRRef}
-              className="draggingDraggingR-content-list"
-            >
-              <ElCollapse 
-                modelValue={activeNames.value}
-                onUpdate:modelValue={(val) => handleChange(val)}
-              >
-                {TypeRender(item)}
-              </ElCollapse>
-            </div>
-          </div>
-        </div>
-      );
+      return ComponentUtils.findNodeById(pageJSON.value.root, selectedComponentId.value);
+    });
+    
+    // 当前组件的物料描述
+    const materialComponent = computed(() => {
+      if (!currentNode.value) return null;
+      
+      return MaterialRegistry.getInstance().getComponentByType(currentNode.value.componentType);
+    });
+    
+    // 属性分组
+    const propertiesGroups = computed(() => {
+      if (!materialComponent.value || !materialComponent.value.properties) {
+        return {};
+      }
+      
+      const groups = {};
+      
+      materialComponent.value.properties.forEach(prop => {
+        const groupName = prop.group || '基础属性';
+        if (!groups[groupName]) {
+          groups[groupName] = [];
+        }
+        groups[groupName].push(prop);
+      });
+      
+      return groups;
+    });
+    
+    // 更新组件属性
+    const updateComponentProp = (propName, value) => {
+      if (!currentNode.value || !selectedComponentId.value) return;
+      
+      store.updateComponentProps(selectedComponentId.value, {
+        [propName]: value
+      });
     };
-
+    
+    // 渲染不同类型的属性编辑器
+    const renderPropertyEditor = (prop) => {
+      const currentValue = currentNode.value?.props[prop.name] ?? prop.defaultValue;
+      
+      switch (prop.type) {
+        case 'string':
+          return (
+            <div class="property-editor property-editor-string">
+              <input
+                type="text"
+                value={currentValue}
+                onInput={(e) => updateComponentProp(prop.name, e.target.value)}
+              />
+            </div>
+          );
+          
+        case 'number':
+          return (
+            <div class="property-editor property-editor-number">
+              <input
+                type="number"
+                value={currentValue}
+                onInput={(e) => updateComponentProp(prop.name, Number(e.target.value))}
+              />
+            </div>
+          );
+          
+        case 'boolean':
+          return (
+            <div class="property-editor property-editor-boolean">
+              <input
+                type="checkbox"
+                checked={currentValue}
+                onChange={(e) => updateComponentProp(prop.name, e.target.checked)}
+              />
+            </div>
+          );
+          
+        case 'select':
+          return (
+            <div class="property-editor property-editor-select">
+              <select
+                value={currentValue}
+                onChange={(e) => updateComponentProp(prop.name, e.target.value)}
+              >
+                {prop.options && prop.options.map(option => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          );
+          
+        case 'color':
+          return (
+            <div class="property-editor property-editor-color">
+              <input
+                type="color"
+                value={currentValue}
+                onChange={(e) => updateComponentProp(prop.name, e.target.value)}
+              />
+            </div>
+          );
+          
+        default:
+          return (
+            <div class="property-editor property-editor-unknown">
+              不支持的属性类型: {prop.type}
+            </div>
+          );
+      }
+    };
+    
+    // 删除当前组件
+    const deleteCurrentComponent = () => {
+      if (!selectedComponentId.value || !pageJSON.value || !pageJSON.value.root) {
+        return;
+      }
+      
+      // 不能删除根组件
+      if (pageJSON.value.root.id === selectedComponentId.value) {
+        alert('不能删除根组件');
+        return;
+      }
+      
+      store.removeComponent(selectedComponentId.value);
+    };
+    
     return () => (
-      RenderEngine(currentOperatingObject.value)
+      <div class="dragging-dragging-r">
+        <div class="property-panel">
+          <div class="property-panel-header">
+            <h3>属性面板</h3>
+          </div>
+          
+          {!currentNode.value ? (
+            <div class="property-empty">
+              <p>请选择一个组件</p>
+            </div>
+          ) : (
+            <div class="property-content">
+              <div class="component-info">
+                <div class="component-type">
+                  <span class="label">组件类型:</span>
+                  <span class="value">{materialComponent.value?.title || currentNode.value.componentType}</span>
+                </div>
+                
+                <div class="component-id">
+                  <span class="label">组件ID:</span>
+                  <span class="value">{currentNode.value.id}</span>
+                </div>
+                
+                {materialComponent.value?.description && (
+                  <div class="component-description">
+                    {materialComponent.value.description}
+                  </div>
+                )}
+                
+                <div class="component-actions">
+                  <button 
+                    class="action-button delete-button"
+                    onClick={deleteCurrentComponent}
+                  >
+                    删除组件
+                  </button>
+                </div>
+              </div>
+              
+              <div class="property-groups">
+                {Object.entries(propertiesGroups.value).map(([groupName, properties]) => (
+                  <div key={groupName} class="property-group">
+                    <div class="group-header">{groupName}</div>
+                    <div class="group-content">
+                      {properties.map(prop => (
+                        <div key={prop.name} class="property-item">
+                          <div class="property-label">
+                            {prop.label}
+                            {prop.required && <span class="required-mark">*</span>}
+                          </div>
+                          <div class="property-control">
+                            {renderPropertyEditor(prop)}
+                          </div>
+                          {prop.description && (
+                            <div class="property-description">
+                              {prop.description}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
     );
-  },
+  }
 });
-
-export default draggingDraggingL;
