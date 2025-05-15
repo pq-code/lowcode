@@ -41,8 +41,11 @@
             │   ├── MaterialList.tsx          # 物料列表页面
             │   ├── MaterialGroups.tsx        # 分组管理页面
             │   └── material/                 # 物料相关页面
-            │       ├── MaterialCreate.tsx    # 物料创建页面
-            │       ├── MaterialEdit.tsx      # 物料编辑页面
+            │       ├── create/               # 物料创建/编辑页面
+            │       │   ├── index.tsx         # 入口文件
+            │       │   ├── components/       # 界面组件
+            │       │   ├── hooks/            # 业务逻辑钩子
+            │       │   └── templates.ts      # 模板数据
             │       ├── MaterialDetail.tsx    # 物料详情页面
             │       └── MaterialImport.tsx    # 物料导入页面
             └── services/                     # 服务层

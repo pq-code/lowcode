@@ -2,6 +2,7 @@
   display: flex;
   flex-direction: column;
   height: 100%;
+  overflow: hidden;
 }
 
 .step-header {
@@ -84,15 +85,23 @@
 .step-body {
   flex: 1;
   min-height: 300px;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
 }
 
 .step-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 0;
+  padding: 16px;
   border-top: 1px solid #ebeef5;
-  margin-top: 16px;
+  margin-top: auto;
+  position: sticky;
+  bottom: 0;
+  background-color: #fff;
+  z-index: 100;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
 }
 
 .step-info {

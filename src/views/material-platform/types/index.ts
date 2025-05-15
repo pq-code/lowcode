@@ -61,6 +61,28 @@ export interface MaterialSource {
   remote?: MaterialRemote;
 }
 
+// 组件文件结构节点类型
+export interface ComponentFileNode {
+  id: string;
+  fileName: string;
+  isFolder: boolean;
+  content?: string;
+  children?: ComponentFileNode[];
+  path?: string;
+  parentId?: string | null;
+  lastModified?: number;
+  language?: string;
+  size?: number;
+  isMain?: boolean; // 标记是否为主文件
+}
+
+// 组件文件结构类型
+export interface ComponentFileStructure {
+  rootFolder: ComponentFileNode;
+  files: Record<string, string>; // id -> 文件内容
+  mainFileId?: string; // 主文件ID
+}
+
 // 物料描述类型
 export interface Material {
   id: string;
@@ -76,6 +98,7 @@ export interface Material {
   slots?: MaterialSlot[];
   isContainer?: boolean;
   source?: MaterialSource;
+  files?: ComponentFileStructure; // 添加文件结构字段
   createTime?: string;
   updateTime?: string;
   creator?: string;

@@ -342,14 +342,20 @@ onMounted(() => {
 }
 
 .main-content {
-  padding: 20px;
+  padding: 0;
   background-color: #f5f7fa;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
   
   .materials-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 20px;
+    padding: 0 20px;
+    flex-shrink: 0;
     
     h2 {
       margin: 0;
@@ -365,6 +371,8 @@ onMounted(() => {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 20px;
+    padding: 0 20px 20px 20px;
+    overflow-y: auto;
   }
 }
 

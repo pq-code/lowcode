@@ -29,7 +29,7 @@ export const materialPlatformRoutes: RouteRecordRaw[] = [
       {
         path: 'create',
         name: 'MaterialCreate',
-        component: () => import('../views/material-platform/pages/material/MaterialCreate.tsx'),
+        component: () => import('../views/material-platform/pages/material/create/index.tsx'),
         meta: {
           title: '创建物料',
           icon: 'plus',
@@ -39,7 +39,7 @@ export const materialPlatformRoutes: RouteRecordRaw[] = [
       {
         path: 'edit/:id',
         name: 'MaterialEdit',
-        component: () => import('../views/material-platform/pages/material/MaterialCreate.tsx'),
+        component: () => import('../views/material-platform/pages/material/create/index.tsx'),
         meta: {
           title: '编辑物料',
           icon: 'edit',
@@ -49,7 +49,7 @@ export const materialPlatformRoutes: RouteRecordRaw[] = [
       {
         path: 'detail/:id',
         name: 'MaterialDetail',
-        component: () => import('../views/material-platform/pages/material/MaterialDetail.tsx'),
+        component: () => import('../views/material-platform/pages/material/detail/index.tsx'),
         meta: {
           title: '物料详情',
           icon: 'info',
@@ -59,7 +59,7 @@ export const materialPlatformRoutes: RouteRecordRaw[] = [
       {
         path: 'import',
         name: 'MaterialImport',
-        component: () => import('../views/material-platform/pages/material/MaterialImport.tsx'),
+        component: () => import('../views/material-platform/pages/material/import/index.tsx'),
         meta: {
           title: '导入物料',
           icon: 'upload',

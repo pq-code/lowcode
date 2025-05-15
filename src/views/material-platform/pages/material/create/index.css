@@ -1,0 +1,539 @@
+/* 
+ * 物料创建/编辑页面样式
+ */
+
+/* 主容器 */
+.material-create-container {
+  padding: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background-color: #fff;
+  overflow: hidden;
+  position: relative;
+}
+
+/* 代码编辑器容器 */
+.code-editor-container {
+  display: flex;
+  flex-direction: row;
+  height: calc(100vh - 180px);
+  gap: 0;
+  margin-top: 0;
+  background-color: #fff;
+  border-top: 1px solid #e4e7ed;
+}
+
+/* 文件树区域 */
+.file-section {
+  width: 280px;
+  min-width: 280px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid #e4e7ed;
+  padding: 16px;
+  background-color: #fff;
+}
+
+/* 文件上传容器 */
+.file-upload-container {
+  margin-bottom: 16px;
+}
+
+.upload-buttons {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.file-tree-actions {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+/* 文件树容器 */
+.file-tree-container {
+  flex: 1;
+  overflow: auto;
+  border: none;
+  border-radius: 0;
+  padding: 8px 0;
+  background-color: #fff;
+}
+
+.custom-tree-node {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.custom-tree-node:hover {
+  background-color: #f5f7fa;
+  padding-left: 4px;
+}
+
+.node-content {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  flex: 1;
+}
+
+.node-icon {
+  margin-right: 6px;
+  font-size: 16px;
+  color: #909399;
+}
+
+.node-label {
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+}
+
+.node-label.main-file {
+  color: #409eff;
+  font-weight: bold;
+}
+
+.main-file-icon {
+  font-size: 12px;
+  margin-left: 4px;
+  color: #67c23a;
+}
+
+.node-actions {
+  display: none;
+  margin-left: 8px;
+}
+
+.custom-tree-node:hover .node-actions {
+  display: block;
+}
+
+.node-action-menu {
+  padding: 8px 0;
+}
+
+.action-item {
+  display: flex;
+  align-items: center;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.action-item:hover {
+  background-color: #f5f7fa;
+}
+
+.action-item .el-icon {
+  margin-right: 8px;
+  font-size: 16px;
+}
+
+/* 代码编辑器主体 */
+.code-editor-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background-color: #fff;
+  padding: 16px;
+  border-left: 1px solid #e4e7ed;
+}
+
+.code-editor-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 0 16px 0;
+  margin-bottom: 16px;
+  border-bottom: 1px solid #e4e7ed;
+}
+
+.code-editor-title {
+  font-size: 16px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+}
+
+.editor-subtitle {
+  font-size: 14px;
+  font-weight: normal;
+  margin-left: 12px;
+  color: #606266;
+}
+
+.code-editor-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.code-editor-wrapper {
+  flex: 1;
+  height: calc(100% - 60px);
+  overflow: hidden;
+  border: 1px solid #e4e7ed;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* 模板抽屉样式 */
+.template-drawer-content {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.template-search {
+  margin-bottom: 20px;
+}
+
+.template-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-gap: 20px;
+  overflow-y: auto;
+  padding-bottom: 20px;
+}
+
+.template-card {
+  border-radius: 4px;
+  overflow: hidden;
+  transition: transform 0.3s, box-shadow 0.3s;
+  border: 1px solid #e4e7ed;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.template-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+}
+
+.template-card-header {
+  height: 160px;
+  background-color: #f5f7fa;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+.template-thumbnail {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.template-thumbnail-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+.template-card-body {
+  padding: 16px;
+}
+
+.template-name {
+  margin: 0 0 8px 0;
+  font-size: 16px;
+}
+
+.template-description {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  color: #606266;
+  line-height: 1.4;
+  height: 40px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.template-tags {
+  margin-bottom: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.template-tag {
+  font-size: 12px;
+}
+
+.template-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.no-templates {
+  grid-column: 1 / -1;
+  padding: 40px 0;
+  text-align: center;
+}
+
+/* 基本信息表单 */
+.basic-info-form {
+  padding: 24px 32px;
+  max-width: 100%;
+  background-color: #fff;
+}
+
+.form-section {
+  margin-bottom: 20px;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  background-color: #fff;
+  box-shadow: none;
+}
+
+.form-section-title {
+  margin: 0 0 16px 0;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #e4e7ed;
+  font-size: 16px;
+  font-weight: bold;
+  color: #303133;
+}
+
+.tags-input {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.tags-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+/* 描述符编辑器 */
+.descriptor-container {
+  padding: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background-color: #fff;
+  box-shadow: none;
+  overflow: hidden;
+}
+
+.descriptor-tabs {
+  display: flex;
+  margin: 16px 16px 16px 16px;
+  flex-shrink: 0;
+}
+
+.descriptor-tab {
+  padding: 10px 20px;
+  cursor: pointer;
+  background-color: #fff;
+  border: 1px solid #e4e7ed;
+  user-select: none;
+}
+
+.descriptor-tab:first-child {
+  border-radius: 4px 0 0 4px;
+}
+
+.descriptor-tab:last-child {
+  border-radius: 0 4px 4px 0;
+}
+
+.descriptor-tab.active {
+  background-color: #409eff;
+  color: white;
+  border-color: #409eff;
+}
+
+.descriptor-content {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+  padding: 0 16px;
+  min-height: 0;
+}
+
+.form-editor-wrapper {
+  width: 100%;
+  overflow-y: auto;
+  padding: 0;
+  flex: 1;
+  padding-bottom: 20px;
+}
+
+.json-editor-wrapper {
+  width: 100%;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.material-form {
+  max-width: 100%;
+  margin: 0;
+}
+
+.props-table {
+  width: 100%;
+  overflow: auto;
+  max-height: 300px; /* 限制表格高度 */
+  border: 1px solid #ebeef5;
+  border-radius: 4px;
+}
+
+/* 代码预览对话框 */
+.code-preview-dialog {
+  font-family: monospace;
+}
+
+.editor-loading-placeholder {
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #fff;
+  border: 1px solid #e4e7ed;
+  border-radius: 4px;
+}
+
+/* 步骤面板样式修复 */
+.el-step {
+  padding: 20px 0;
+}
+
+.el-step__title {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.el-step__description {
+  font-size: 12px;
+}
+
+.step-content {
+  background-color: #fff;
+  min-height: calc(100vh - 180px);
+}
+
+.step-panel-container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.step-panel-buttons {
+  padding: 16px 24px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  background-color: #fff;
+  border-top: 1px solid #e4e7ed;
+}
+
+@keyframes rotating {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* 表单优化 */
+.el-form-item {
+  margin-bottom: 16px;
+}
+
+.el-input__inner, .el-textarea__inner {
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.el-input__inner:focus, .el-textarea__inner:focus {
+  border-color: #409eff;
+  box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.1);
+}
+
+.el-input__inner:hover, .el-textarea__inner:hover {
+  border-color: #c0c4cc;
+}
+
+/* 标签样式 */
+.el-tag {
+  margin-right: 8px;
+  margin-bottom: 8px;
+  transition: all 0.3s;
+}
+
+.el-tag:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* 步骤条增强 */
+.el-step__head.is-process {
+  color: #409eff;
+  border-color: #409eff;
+}
+
+.el-step__title.is-process {
+  color: #409eff;
+  font-weight: 600;
+}
+
+.step-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  position: relative;
+  padding-bottom: 0; /* 移除不必要的padding，因为我们在特定容器中添加了padding */
+}
+
+/* AI分析结果容器 */
+.ai-analysis-container {
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 4px;
+}
+
+.analysis-title {
+  font-size: 18px;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #e4e7ed;
+  color: #409eff;
+}
+
+.analysis-content {
+  margin-bottom: 20px;
+}
+
+.analysis-content p {
+  margin-bottom: 10px;
+  line-height: 1.5;
+}
+
+.analysis-content h4 {
+  margin: 20px 0 10px 0;
+  font-size: 16px;
+  color: #606266;
+} 

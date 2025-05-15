@@ -15,31 +15,23 @@ MonacoEditor 组件虽然功能强大，但会导致页面卡顿和性能问题�
    - 将内部的 MonacoEditor 替换为 SimpleCodeEditor
    - 保持了相同的 API 和功能
 
+3. 重构了物料创建/编辑页面：
+   - 将大型的 `MaterialCreate.tsx` 文件拆分为更小的模块化组件
+   - 重构后的文件位于 `src/views/material-platform/pages/material/create/` 目录下
+   - 将业务逻辑与UI展示分离，提高代码可维护性和复用性
+   - 所有组件都已经使用 SimpleCodeEditor 替代 MonacoEditor
+
 ## 待完成工作
 
 以下是需要完成的剩余迁移工作：
 
-### 1. 修复 MaterialCreate.tsx 中的导入和使用
-
-MaterialCreate.tsx 文件中存在多个问题需要解决：
-
-- 更新组件导入，确保所有 Element Plus 图标正确导入
-- 替换 MonacoEditor 为 SimpleCodeEditor
-- 修复可能的类型和函数调用错误
-
-建议：
-- 先备份当前文件
-- 逐步调整导入部分
-- 确保 StepPanel 组件正确导入或重新实现
-- 替换所有 MonacoEditor 实例为 SimpleCodeEditor
-
-### 2. 性能测试
+### 1. 性能测试
 
 - 在完成迁移后，测试应用的性能表现
 - 比较迁移前后的内存使用和页面响应速度
 - 特别关注大文件编辑和长时间运行场景
 
-### 3. 功能验证
+### 2. 功能验证
 
 - 确保所有代码编辑相关功能仍然正常工作
 - 验证 JSON 编辑和验证功能

@@ -24,7 +24,11 @@ src/views/material-platform/
 │   │   ├── list/              # 物料列表页面
 │   │   │   ├── index.tsx      # 物料列表组件
 │   │   │   └── index.css      # 物料列表样式
-│   │   ├── MaterialCreate.tsx # 物料创建/编辑页面
+│   │   ├── create/            # 物料创建/编辑页面
+│   │   │   ├── index.tsx      # 入口文件
+│   │   │   ├── components/    # 拆分的UI组件
+│   │   │   ├── hooks/         # 业务逻辑钩子
+│   │   │   └── templates.ts   # 模板数据
 │   │   ├── MaterialDetail.tsx # 物料详情页面
 │   │   └── MaterialImport.tsx # 物料导入页面
 │   ├── groups/                # 分组管理页面
