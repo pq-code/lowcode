@@ -1,7 +1,7 @@
 import { defineComponent, ref, onMounted } from 'vue';
 import { ElMessage } from 'element-plus';
-import { fetchMaterialGroups, createMaterialGroup } from '../services/materialService';
-import type { MaterialGroup } from '../services/materialService';
+import { fetchMaterialGroups, createMaterialGroup } from '../../services/materialService';
+import type { MaterialGroup } from '../../types';
 
 export default defineComponent({
   name: 'MaterialGroups',

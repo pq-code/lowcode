@@ -59,76 +59,74 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script>
 import { computed, defineComponent } from 'vue';
 import { More, Document, Menu } from '@element-plus/icons-vue';
-import type { Material } from '../services/materialService';
 
-const props = defineProps<{
-  material: MaterialWithProps;
-}>();
-
-const emit = defineEmits<{
-  (e: 'preview', material: Material): void;
-  (e: 'edit', material: Material): void;
-  (e: 'delete', material: Material): void;
-}>();
-
-// 获取图标组件
-const getIconComponent = computed(() => {
-  // 这里可以根据material.icon的值返回不同的图标组件
-  // 目前简单实现，后续可以扩展
-  return props.material.icon?.includes('menu') ? Menu : Document;
-});
-
-// 获取分组名称
-const getGroupName = computed(() => {
-  const groupMap: Record<string, string> = {
-    'base': '基础组件',
-    'layout': '布局组件',
-    'form': '表单组件',
-    'data': '数据组件',
-    'feedback': '反馈组件'
-  };
-  
-  return groupMap[props.material.group] || props.material.group;
-});
-
-// 格式化时间
-const formatTime = (time?: string) => {
-  if (!time) return '';
-  
-  try {
-    const date = new Date(time);
-    return date.toLocaleDateString();
-  } catch (e) {
-    return '';
+export default defineComponent({
+  name: 'MaterialCard',
+  props: {
+    material: {
+      type: Object,
+      required: true
+    }
+  },
+  emits: ['preview', 'edit', 'delete'],
+  setup(props, { emit }) {
+    // 获取图标组件
+    const getIconComponent = computed(() => {
+      // 这里可以根据material.icon的值返回不同的图标组件
+      // 目前简单实现，后续可以扩展
+      return props.material.icon?.includes('menu') ? Menu : Document;
+    });
+    
+    // 获取分组名称
+    const getGroupName = computed(() => {
+      const groupMap = {
+        'base': '基础组件',
+        'layout': '布局组件',
+        'form': '表单组件',
+        'data': '数据组件',
+        'feedback': '反馈组件'
+      };
+      
+      return groupMap[props.material.group] || props.material.group;
+    });
+    
+    // 格式化时间
+    const formatTime = (time) => {
+      if (!time) return '';
+      
+      try {
+        const date = new Date(time);
+        return date.toLocaleDateString();
+      } catch (e) {
+        return '';
+      }
+    };
+    
+    // 处理下拉菜单命令
+    const handleCommand = (command) => {
+      switch (command) {
+        case 'preview':
+          emit('preview', props.material);
+          break;
+        case 'edit':
+          emit('edit', props.material);
+          break;
+        case 'delete':
+          emit('delete', props.material);
+          break;
+      }
+    };
+    
+    return {
+      getIconComponent,
+      getGroupName,
+      formatTime,
+      handleCommand
+    };
   }
-};
-
-// 处理下拉菜单命令
-const handleCommand = (command: string) => {
-  switch (command) {
-    case 'preview':
-      emit('preview', props.material);
-      break;
-    case 'edit':
-      emit('edit', props.material);
-      break;
-    case 'delete':
-      emit('delete', props.material);
-      break;
-  }
-};
-
-// 扩展Material接口，确保包含props属性
-interface MaterialWithProps extends Material {
-  props?: Record<string, any>;
-}
-
-// 添加默认导出
-defineComponent({
-  name: 'MaterialCard'
 });
 </script>
 

@@ -1,6 +1,6 @@
 import { defineComponent, ref, watch } from 'vue';
-import MonacoEditor from './MonacoEditor';
 import { ElMessage } from 'element-plus';
+import SimpleCodeEditor from './SimpleCodeEditor';
 
 export interface JsonEditorProps {
   modelValue?: any;
@@ -110,16 +110,17 @@ const JsonEditor = defineComponent({
   },
   render() {
     return (
-      <div class="json-editor-container">
-        <MonacoEditor
+      <div class="json-editor-container" style={{ height: '100%', display: 'flex', flexDirection: 'column', flex: 1 }}>
+        <SimpleCodeEditor
           modelValue={this.editorContent}
           onUpdate:modelValue={(v: string) => this.editorContent = v}
           onChange={this.handleChange}
           language="json"
-          theme="vs"
+          theme="light"
           height={this.height}
           width={this.width}
           readOnly={this.readOnly}
+          placeholder="请输入有效的JSON数据..."
           options={{
             formatOnPaste: true,
             formatOnType: true

@@ -37,7 +37,7 @@ const MonacoEditor = defineComponent({
     },
     height: {
       type: String,
-      default: '100%'
+      default: '300px'
     },
     width: {
       type: String,
@@ -48,213 +48,205 @@ const MonacoEditor = defineComponent({
       default: false
     }
   },
-  emits: ['update:modelValue', 'change', 'editor-mounted'],
+  emits: ['update:modelValue', 'change', 'editorMounted', 'editorWillMount'],
   setup(props, { emit }) {
-    const editorContainer = ref<HTMLElement | null>(null);
-    const editor = ref<monaco.editor.IStandaloneCodeEditor | null>(null);
-    const isEditorReady = ref(false);
-    const internalValue = ref(props.modelValue || '');
-    const isContentChanged = ref(false);
-    const debounceTimer = ref<number | null>(null);
-
-    // 检测文件类型并设置正确的语言
-    const detectLanguage = (content: string): string => {
-      if (!content || content.length === 0) {
-        return props.language;
-      }
-      
-      // 限制检查的内容长度，避免处理过大的文件导致性能问题
-      const sampleContent = content.slice(0, 1000);
-      
-      if (sampleContent.includes('<template>') && sampleContent.includes('<script')) {
-        return 'vue';
-      } else if (sampleContent.includes('import') && sampleContent.includes('from') && (sampleContent.includes('React') || sampleContent.includes('jsx'))) {
-        return 'typescript';
-      } else if (sampleContent.includes('class') && sampleContent.includes('extends') && sampleContent.includes('React')) {
-        return 'typescript';
-      } else if (sampleContent.includes('<html') || sampleContent.includes('<!DOCTYPE')) {
-        return 'html';
-      } else if (sampleContent.includes('@import') || sampleContent.includes('{') && sampleContent.includes('}') && sampleContent.includes(':')) {
-        return 'css';
-      }
-      return props.language;
-    };
-
-    // 创建编辑器实例
-    const createEditor = () => {
-      if (!editorContainer.value) return;
-
-      // 注册Vue语言支持
-      monaco.languages.register({ id: 'vue' });
+    const containerRef = ref<HTMLElement | null>(null);
+    const editorRef = ref<monaco.editor.IStandaloneCodeEditor | null>(null);
+    const valueRef = ref(props.modelValue || '');
+    let preventTriggerChangeEvent = false;
+    
+    // 初始化编辑器
+    const initEditor = () => {
+      if (!containerRef.value) return;
       
       // 配置编辑器选项
-      const options: monaco.editor.IStandaloneEditorConstructionOptions = {
-        value: internalValue.value,
-        language: detectLanguage(internalValue.value),
+      const defaultOptions: monaco.editor.IStandaloneEditorConstructionOptions = {
+        value: valueRef.value,
+        language: props.language,
         theme: props.theme,
         readOnly: props.readOnly,
         automaticLayout: true,
-        minimap: { enabled: false },
-        scrollBeyondLastLine: false,
-        lineNumbers: 'on',
-        roundedSelection: true,
-        scrollbar: {
-          useShadows: false,
-          verticalScrollbarSize: 10,
-          horizontalScrollbarSize: 10,
-          alwaysConsumeMouseWheel: false
-        },
-        lineNumbersMinChars: 3,
-        fontSize: 14,
-        tabSize: 2,
-        wordWrap: 'on',
-        // 优化性能的选项
-        folding: false,
-        glyphMargin: false,
-        contextmenu: false,
-        // 合并用户提供的选项
-        ...props.options
+        minimap: { enabled: false }, // 默认禁用小地图以提高性能
+        scrollBeyondLastLine: false, // 默认禁用滚动过最后一行以提高性能
+        wordWrap: 'on', // 默认启用自动换行
+        // 使用有限的代码智能提示以提高性能
+        quickSuggestions: false,
+        suggestOnTriggerCharacters: false
       };
-
-      editor.value = monaco.editor.create(editorContainer.value, options);
-
-      // 使用防抖处理内容变化，避免频繁更新
-      const debouncedUpdate = (value: string) => {
-        if (debounceTimer.value !== null) {
-          clearTimeout(debounceTimer.value);
+      
+      // 调用 editorWillMount 事件
+      emit('editorWillMount', monaco);
+      
+      try {
+        // 清除已有编辑器
+        if (editorRef.value) {
+          editorRef.value.dispose();
         }
         
-        debounceTimer.value = window.setTimeout(() => {
-          internalValue.value = value;
+        // 创建新编辑器
+        const editor = monaco.editor.create(
+          containerRef.value,
+          {
+            ...defaultOptions,
+            ...props.options
+          }
+        );
+        
+        editorRef.value = editor;
+        
+        // 内容变更事件
+        editor.onDidChangeModelContent((event) => {
+          if (preventTriggerChangeEvent) {
+            preventTriggerChangeEvent = false;
+            return;
+          }
+          
+          const value = editor.getValue();
+          valueRef.value = value;
           emit('update:modelValue', value);
-          emit('change', value);
-          isContentChanged.value = false;
-          debounceTimer.value = null;
-        }, 300);
-      };
-
-      // 监听内容变化
-      editor.value.onDidChangeModelContent(() => {
-        if (editor.value) {
-          const value = editor.value.getValue();
-          isContentChanged.value = true;
-          debouncedUpdate(value);
-        }
-      });
-
-      // 调整高度
-      if (props.autoHeight) {
-        updateEditorHeight();
-      }
-
-      isEditorReady.value = true;
-      emit('editor-mounted', editor.value);
-    };
-
-    // 更新编辑器高度
-    const updateEditorHeight = () => {
-      if (!editor.value || !props.autoHeight) return;
-      
-      const lineHeight = editor.value.getOption(monaco.editor.EditorOption.lineHeight);
-      const lineCount = editor.value.getModel()?.getLineCount() || 1;
-      
-      // 限制最大高度和最大行数
-      const maxLines = 30;
-      const actualLineCount = Math.min(lineCount, maxLines);
-      const height = Math.min(800, lineHeight * actualLineCount + 30); // 最大高度800px
-      
-      editor.value.layout({ width: editor.value.getLayoutInfo().width, height });
-      if (editorContainer.value) {
-        editorContainer.value.style.height = `${height}px`;
-      }
-    };
-
-    // 监听值变化
-    watch(() => props.modelValue, (newValue) => {
-      // 只有当内部值与外部值不同且不是由内部编辑引起的变化时才更新
-      if (newValue !== internalValue.value && !isContentChanged.value && editor.value) {
-        internalValue.value = newValue || '';
-        editor.value.setValue(internalValue.value);
+          emit('change', value, event);
+        });
         
+        // 调用 editorMounted 事件
+        emit('editorMounted', editor, monaco);
+        
+        // 自动调整高度
         if (props.autoHeight) {
+          const updateEditorHeight = () => {
+            const contentHeight = Math.min(
+              1000, // 设置最大高度限制
+              editor.getContentHeight()
+            );
+            containerRef.value!.style.height = `${contentHeight}px`;
+            editor.layout();
+          };
+          
+          editor.onDidContentSizeChange(updateEditorHeight);
+          updateEditorHeight();
+        }
+      } catch (error) {
+        console.error('初始化编辑器失败:', error);
+      }
+    };
+    
+    // 销毁编辑器
+    const disposeEditor = () => {
+      if (editorRef.value) {
+        editorRef.value.dispose();
+        editorRef.value = null;
+      }
+    };
+    
+    // 监听 modelValue 变化
+    watch(
+      () => props.modelValue,
+      (newValue) => {
+        if (newValue !== valueRef.value) {
+          valueRef.value = newValue || '';
+          
+          if (editorRef.value) {
+            preventTriggerChangeEvent = true;
+            
+            // 使用 setValue 而不是替换整个模型
+            const model = editorRef.value.getModel();
+            if (model) {
+              // 仅当内容实际变化时才更新
+              const currentValue = editorRef.value.getValue();
+              if (currentValue !== newValue) {
+                editorRef.value.setValue(newValue || '');
+              }
+            }
+          }
+        }
+      }
+    );
+    
+    // 监听 language 变化
+    watch(
+      () => props.language,
+      (newLanguage) => {
+        if (editorRef.value) {
+          const model = editorRef.value.getModel();
+          if (model) {
+            monaco.editor.setModelLanguage(model, newLanguage!);
+          }
+        }
+      }
+    );
+    
+    // 监听 theme 变化
+    watch(
+      () => props.theme,
+      (newTheme) => {
+        if (editorRef.value) {
+          monaco.editor.setTheme(newTheme!);
+        }
+      }
+    );
+    
+    // 监听 readOnly 变化
+    watch(
+      () => props.readOnly,
+      (newReadOnly) => {
+        if (editorRef.value) {
+          editorRef.value.updateOptions({ readOnly: newReadOnly });
+        }
+      }
+    );
+    
+    // 监听 options 变化
+    watch(
+      () => props.options,
+      (newOptions) => {
+        if (editorRef.value) {
+          editorRef.value.updateOptions(newOptions!);
+        }
+      },
+      { deep: true }
+    );
+    
+    // 监听 height 和 width 变化
+    watch(
+      [() => props.height, () => props.width],
+      () => {
+        if (containerRef.value) {
+          containerRef.value.style.height = props.height!;
+          containerRef.value.style.width = props.width!;
+          
           nextTick(() => {
-            updateEditorHeight();
+            if (editorRef.value) {
+              editorRef.value.layout();
+            }
           });
         }
       }
-    });
-
-    // 监听语言变化
-    watch(() => props.language, (newLanguage) => {
-      if (editor.value && monaco.editor.getModels()[0]) {
-        monaco.editor.setModelLanguage(monaco.editor.getModels()[0], newLanguage);
-      }
-    });
-
-    // 监听只读状态变化
-    watch(() => props.readOnly, (newValue) => {
-      if (editor.value) {
-        editor.value.updateOptions({ readOnly: newValue });
-      }
-    });
-
-    // 监听主题变化
-    watch(() => props.theme, (newTheme) => {
-      if (editor.value) {
-        monaco.editor.setTheme(newTheme);
-      }
-    });
-
-    // 组件挂载时创建编辑器
+    );
+    
+    // 组件挂载时初始化编辑器
     onMounted(() => {
-      // 延迟创建编辑器，避免阻塞UI渲染
-      nextTick(() => {
-        createEditor();
-      });
+      if (containerRef.value) {
+        containerRef.value.style.height = props.height!;
+        containerRef.value.style.width = props.width!;
+        
+        // 延迟初始化以避免卡顿
+        setTimeout(() => {
+          initEditor();
+        }, 0);
+      }
     });
-
+    
     // 组件卸载前销毁编辑器
     onBeforeUnmount(() => {
-      // 清除防抖定时器
-      if (debounceTimer.value !== null) {
-        clearTimeout(debounceTimer.value);
-      }
-      
-      if (editor.value) {
-        editor.value.dispose();
-      }
+      disposeEditor();
     });
-
-    // 格式化代码
-    const formatCode = () => {
-      if (editor.value) {
-        editor.value.getAction('editor.action.formatDocument')?.run();
-      }
-    };
-
+    
     return {
-      editorContainer,
-      editor,
-      isEditorReady,
-      formatCode
+      containerRef
     };
   },
   render() {
     return (
-      <div 
-        class="monaco-editor-container" 
-        style={{ 
-          width: this.width, 
-          height: this.autoHeight ? 'auto' : this.height,
-          minHeight: '200px'
-        }}
-      >
-        <div 
-          ref="editorContainer" 
-          class="monaco-editor-instance"
-          style={{ width: '100%', height: '100%' }}
-        ></div>
-      </div>
+      <div ref="containerRef" class="monaco-editor-container" style={{ height: this.height, width: this.width }}></div>
     );
   }
 });

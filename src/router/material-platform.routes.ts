@@ -14,27 +14,13 @@ export const materialPlatformRoutes: RouteRecordRaw[] = [
     },
     children: [
       {
-        path: 'dashboard',
-        name: 'MaterialDashboard',
-        component: () => import('../views/material-platform/dashboard.tsx'),
-        meta: {
-          title: '物料概览',
-          icon: 'dashboard'
-        }
-      },
-      {
-        path: 'components',
-        name: 'MaterialComponents',
-        component: () => import('../views/material-platform/components.tsx'),
-        meta: {
-          title: '组件管理',
-          icon: 'list'
-        }
+        path: '',
+        redirect: '/material-platform/materials'
       },
       {
         path: 'materials',
         name: 'MaterialManagement',
-        component: () => import('../views/material-platform/pages/MaterialList.tsx'),
+        component: () => import('../views/material-platform/pages/material/list/index.tsx'),
         meta: {
           title: '物料管理',
           icon: 'component'
@@ -53,7 +39,7 @@ export const materialPlatformRoutes: RouteRecordRaw[] = [
       {
         path: 'edit/:id',
         name: 'MaterialEdit',
-        component: () => import('../views/material-platform/pages/material/MaterialEdit.tsx'),
+        component: () => import('../views/material-platform/pages/material/MaterialCreate.tsx'),
         meta: {
           title: '编辑物料',
           icon: 'edit',
@@ -101,7 +87,7 @@ export const materialPlatformRoutes: RouteRecordRaw[] = [
       {
         path: 'groups',
         name: 'MaterialGroups',
-        component: () => import('../views/material-platform/pages/MaterialGroups.tsx'),
+        component: () => import('../views/material-platform/pages/groups/index.tsx'),
         meta: {
           title: '分组管理',
           icon: 'folder'

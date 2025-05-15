@@ -99,7 +99,7 @@ const StepPanel = defineComponent({
     
     return (
       <div class="step-panel">
-        <div class="step-header">
+        {/* <div class="step-header">
           {this.steps.map((step, index) => (
             <div 
               key={index} 
@@ -125,7 +125,7 @@ const StepPanel = defineComponent({
               {index < this.steps.length - 1 && <div class="step-line"></div>}
             </div>
           ))}
-        </div>
+        </div> */}
         
         <div class="step-body">
           {this.$slots[slotName] && this.$slots[slotName]()}

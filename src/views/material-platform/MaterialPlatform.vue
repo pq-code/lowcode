@@ -43,12 +43,13 @@
               placeholder="搜索物料" 
               prefix-icon="Search"
               clearable
+              @input="handleSearch"
             />
           </div>
           
           <el-menu 
             class="group-menu"
-            :default-active="activeGroup"
+            :default-active="currentGroup"
             @select="handleGroupSelect"
           >
             <el-menu-item index="all">
@@ -65,12 +66,12 @@
         
         <!-- 右侧内容区 -->
         <el-main class="main-content">
-          <router-view v-if="isRouterViewActive"></router-view>
+          <router-view v-if="isRouterViewActive" />
           
           <!-- 默认展示物料卡片列表 -->
           <template v-else>
             <div class="materials-header">
-              <h2>{{ currentGroupName || '全部物料' }}</h2>
+              <h2>{{ getCurrentGroupName() }}</h2>
               <div class="materials-actions">
                 <el-button type="primary" @click="createMaterial">
                   <el-icon><Plus /></el-icon>
@@ -130,95 +131,61 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch, defineAsyncComponent } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { Plus, Folder, Files, Search, Upload } from '@element-plus/icons-vue';
 import { ElMessage } from 'element-plus';
-import { fetchMaterialGroups, fetchMaterialsByGroup } from './services/materialService';
-
-// 异步加载组件
-const MaterialCard = defineAsyncComponent(() => import('./components/MaterialCard.vue'));
+import { useGroups } from './hooks/useGroups';
+import { useMaterials } from './hooks/useMaterials';
+import type { Material } from './types';
+import MaterialCard from './components/MaterialCard.vue';
 
 // 路由
 const router = useRouter();
 const route = useRoute();
 
-// 分组和物料数据
-const groups = ref<any[]>([]);
-const materials = ref<any[]>([]);
+// 使用自定义钩子
+const { 
+  groups, 
+  currentGroup, 
+  loadGroups, 
+  createGroup: apiCreateGroup 
+} = useGroups();
+
+const { 
+  materials,
+  filteredMaterials,
+  loadMaterials,
+  searchState,
+  removeMaterial
+} = useMaterials();
+
+// 搜索关键词
 const searchKey = ref('');
-const activeGroup = ref('all');
-const currentGroupName = ref('');
 
-// 获取分组数据
-const loadGroups = async () => {
-  try {
-    // 这里将来会从API获取，现在使用模拟数据
-    // const response = await fetchMaterialGroups();
-    groups.value = [
-      { id: 'base', name: '基础组件' },
-      { id: 'layout', name: '布局组件' },
-      { id: 'form', name: '表单组件' },
-      { id: 'data', name: '数据组件' },
-      { id: 'feedback', name: '反馈组件' }
-    ];
-  } catch (error) {
-    console.error('获取分组数据失败', error);
-    ElMessage.error('获取分组数据失败');
-  }
-};
-
-// 获取物料数据
-const loadMaterials = async (groupId: string = 'all') => {
-  try {
-    // 这里将来会从API获取，现在使用模拟数据
-    // const response = await fetchMaterialsByGroup(groupId);
-    materials.value = groupId === 'all' 
-      ? Array(10).fill(null).map((_, i) => ({
-          id: `material_${i}`,
-          type: `component_${i}`,
-          name: `示例物料 ${i+1}`,
-          description: '这是一个示例物料描述',
-          icon: 'el-icon-menu',
-          version: '1.0.0',
-          createTime: new Date().toISOString(),
-          group: Math.random() > 0.5 ? 'base' : 'layout'
-        }))
-      : Array(5).fill(null).map((_, i) => ({
-          id: `material_${groupId}_${i}`,
-          type: `component_${i}`,
-          name: `${groupId} 物料 ${i+1}`,
-          description: `这是一个${groupId}分组的物料`,
-          icon: 'el-icon-document',
-          version: '1.0.0',
-          createTime: new Date().toISOString(),
-          group: groupId
-        }));
-      
-    if (groupId !== 'all') {
-      const currentGroup = groups.value.find(g => g.id === groupId);
-      currentGroupName.value = currentGroup ? currentGroup.name : '';
-    } else {
-      currentGroupName.value = '';
-    }
-    console.log(materials.value);
-  } catch (error) {
-    console.error('获取物料数据失败', error);
-    ElMessage.error('获取物料数据失败');
-  }
-};
+// 菜单激活状态
+const activeMenu = computed(() => {
+  return route.path;
+});
 
 const isRouterViewActive = computed(() => {
   // 只有当路径不是/material-platform/和/material-platform时才显示路由视图
   return route.path !== '/material-platform/' && route.path !== '/material-platform';
 });
 
+// 获取当前分组名称
+const getCurrentGroupName = () => {
+  if (currentGroup.value === 'all') {
+    return '全部物料';
+  }
+  const group = groups.value.find(g => g.id === currentGroup.value);
+  return group ? group.name : '全部物料';
+};
+
 // 监听路由变化，如果是根路径则重定向到materials
 watch(() => route.path, (path) => {
   if (path === '/material-platform' || path === '/material-platform/') {
-    // 不再重定向，而是在当前页面显示物料列表
-    activeGroup.value = 'all';
-    loadMaterials('all');
+    router.push('/material-platform/materials');
   }
 }, { immediate: true });
 
@@ -229,19 +196,11 @@ const groupForm = ref({
   description: ''
 });
 
-// 菜单激活状态
-const activeMenu = computed(() => {
-  return route.path;
-});
-
-// 过滤物料
-const filteredMaterials = computed(() => {
-  return materials.value;
-});
-
 // 处理分组选择
 const handleGroupSelect = (groupId: string) => {
-  activeGroup.value = groupId;
+  // 设置当前选中的分组
+  currentGroup.value = groupId;
+  // 加载该分组的物料
   loadMaterials(groupId);
 };
 
@@ -255,38 +214,35 @@ const showCreateGroupDialog = () => {
 };
 
 // 创建分组
-const createGroup = () => {
+const createGroup = async () => {
   if (!groupForm.value.name) {
     ElMessage.warning('请输入分组名称');
     return;
   }
   
-  // 模拟创建成功
-  const newGroup = {
-    id: `group_${Date.now()}`,
+  const newGroup = await apiCreateGroup({
     name: groupForm.value.name,
     description: groupForm.value.description
-  };
+  });
   
-  groups.value.push(newGroup);
-  createGroupDialogVisible.value = false;
-  ElMessage.success('创建分组成功');
+  if (newGroup) {
+    createGroupDialogVisible.value = false;
+  }
 };
 
 // 预览物料
-const previewMaterial = (material: any) => {
+const previewMaterial = (material: Material) => {
   router.push(`/material-platform/preview/${material.id}`);
 };
 
 // 编辑物料
-const editMaterial = (material: any) => {
+const editMaterial = (material: Material) => {
   router.push(`/material-platform/edit/${material.id}`);
 };
 
 // 删除物料
-const deleteMaterial = (material: any) => {
-  ElMessage.success(`删除成功: ${material.name}`);
-  materials.value = materials.value.filter(item => item.id !== material.id);
+const deleteMaterial = (material: Material) => {
+  removeMaterial(material.id);
 };
 
 // 创建物料
@@ -304,10 +260,16 @@ const backToHome = () => {
   router.push('/');
 };
 
+// 处理搜索
+const handleSearch = () => {
+  searchState.keyword = searchKey.value;
+  loadMaterials(currentGroup.value);
+};
+
 // 生命周期钩子
 onMounted(() => {
   loadGroups();
-  loadMaterials();
+  loadMaterials('all');
 });
 </script>
 
@@ -317,6 +279,7 @@ onMounted(() => {
   height: 100vh;
   display: flex;
   flex-direction: column;
+  overflow-y: hidden;
 }
 
 .header {
@@ -349,7 +312,6 @@ onMounted(() => {
 .main-container {
   flex: 1;
   height: calc(100vh - 60px);
-  
 }
 
 .sidebar {
@@ -407,12 +369,68 @@ onMounted(() => {
 }
 
 @media (max-width: 768px) {
-  .sidebar {
-    width: 100% !important;
+  .material-platform {
+    height: auto;
+    min-height: 100vh;
+  }
+  
+  .header {
+    flex-direction: column;
+    padding: 10px;
+    height: auto !important;
+    
+    .logo {
+      margin-bottom: 10px;
+    }
+    
+    .nav {
+      width: 100%;
+      margin: 10px 0;
+      
+      .menu {
+        width: 100%;
+        justify-content: space-between;
+      }
+    }
+    
+    .actions {
+      margin-top: 10px;
+    }
   }
   
   .main-container {
     flex-direction: column;
+    height: auto;
+  }
+  
+  .sidebar {
+    width: 100% !important;
+    order: 1;
+    border-right: none;
+    border-bottom: 1px solid #e6e6e6;
+  }
+  
+  .main-content {
+    order: 2;
+    padding: 15px;
+    
+    .materials-header {
+      flex-direction: column;
+      align-items: flex-start;
+      
+      h2 {
+        margin-bottom: 10px;
+      }
+      
+      .materials-actions {
+        width: 100%;
+        justify-content: space-between;
+      }
+    }
+    
+    .materials-grid {
+      grid-template-columns: 1fr;
+    }
   }
 }
 </style> 

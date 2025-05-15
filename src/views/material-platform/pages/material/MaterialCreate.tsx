@@ -1,42 +1,56 @@
-import { defineComponent, ref, reactive, watch, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
-import { 
-  ElMessage, 
-  ElMessageBox, 
-  ElForm, 
-  ElFormItem, 
-  ElInput, 
-  ElSelect, 
-  ElOption, 
-  ElButton, 
-  ElIcon, 
-  ElTag, 
-  ElTable, 
-  ElTableColumn, 
-  ElEmpty, 
+import { defineComponent, ref, computed, onMounted, reactive, watch } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
+import {
+  ElForm,
+  ElFormItem,
+  ElInput,
+  ElButton,
+  ElSelect,
+  ElOption,
   ElUpload,
-  ElSwitch,
+  ElMessage,
+  ElMessageBox,
+  ElIcon,
+  ElSteps,
+  ElStep,
+  ElTag,
+  ElTable,
+  ElTableColumn,
   ElDrawer,
-  ElCard
+  ElSwitch,
+  ElEmpty,
+  ElTabs,
+  ElTabPane,
+  ElAlert,
+  ElResult,
+  ElImage,
+  ElCard,
+  ElSkeleton,
+  ElSkeletonItem,
+  ElProgress
 } from 'element-plus';
-import { 
-  Document, 
-  Edit, 
-  Upload as UploadIcon, 
-  View, 
-  Refresh, 
-  MagicStick, 
-  Connection, 
-  Search, 
-  ArrowLeft, 
-  Check, 
-  Close, 
-  Document as DocumentIcon,
-  Plus
+import {
+  Document,
+  Edit,
+  Upload as UploadIcon,
+  View,
+  Refresh,
+  MagicStick,
+  Connection,
+  Search,
+  ArrowLeft,
+  ArrowRight,
+  Check,
+  Close,
+  Plus,
+  Menu as ComponentIcon,
+  Picture as PictureRounded,
+  Top as TopRight,
+  VideoPlay as CodeIcon
 } from '@element-plus/icons-vue';
-import { createMaterial, fetchMaterialGroups, parseComponentWithAI } from '../../services/materialService';
-import type { Material, MaterialGroup } from '../../services/materialService';
-import MonacoEditor from '@/components/MonacoEditor';
+import { fetchMaterialGroups, createMaterial, updateMaterial, fetchMaterialDetail } from '../../services/materialService';
+import type { Material, MaterialGroup } from '../../types';
+import SimpleCodeEditor from '@/components/SimpleCodeEditor';
 import JsonEditor from '@/components/JsonEditor';
 import StepPanel from '@/components/StepPanel';
 import './MaterialCreate.css';
@@ -58,7 +72,7 @@ const mockTemplates: TemplateItem[] = [
     name: '基础容器组件',
     description: '简单的容器组件，带标题和内容区',
     tags: ['基础', '容器'],
-    thumbnail: 'https://via.placeholder.com/120x80?text=Basic',
+    thumbnail: '',
     code: `<template>
   <div class="component-container">
     <h3>{{ title }}</h3>
@@ -95,7 +109,7 @@ defineProps({
     name: '表单组件',
     description: '包含输入框和选择器的表单',
     tags: ['表单', 'UI'],
-    thumbnail: 'https://via.placeholder.com/120x80?text=Form',
+    thumbnail: '',
     code: `<template>
   <div class="form-component">
     <el-form :model="formData" label-width="80px">
@@ -135,7 +149,7 @@ const handleSubmit = () => {
     name: '表格组件',
     description: '数据表格，带有操作按钮',
     tags: ['表格', '数据', 'UI'],
-    thumbnail: 'https://via.placeholder.com/120x80?text=Table',
+    thumbnail: '',
     code: `<template>
   <div class="table-component">
     <div class="table-header">
@@ -200,7 +214,7 @@ const handleDelete = (row) => {
     name: '卡片组件',
     description: '展示信息的卡片组件',
     tags: ['卡片', 'UI'],
-    thumbnail: 'https://via.placeholder.com/120x80?text=Card',
+    thumbnail: '',
     code: `<template>
   <div class="card-component" :class="{ 'is-hoverable': hoverable }">
     <div class="card-header" v-if="title || $slots.header">
@@ -278,7 +292,6 @@ const MaterialCreate = defineComponent({
     const groups = ref<MaterialGroup[]>([]);
     const componentContent = ref('');
     const fileList = ref<any[]>([]);
-    const isEditingDescriptor = ref(false);
     const searchQuery = ref('');
     const selectedTemplateId = ref<string>('');
     const showTemplateDrawer = ref(false);
@@ -290,6 +303,10 @@ const MaterialCreate = defineComponent({
     
     // 组件编辑器内容
     const componentCode = ref('');
+    
+    // 编辑器加载状态
+    const editorLoading = ref(false);
+    const editorReady = ref(false);
     
     // 物料表单数据
     const materialForm = ref<Partial<Material>>({
@@ -402,6 +419,14 @@ onMounted(() => {
       try {
         loading.value = true;
         groups.value = await fetchMaterialGroups();
+        // 设置默认分组，但不自动设置类型
+        if (groups.value.length > 0) {
+          materialForm.value.group = groups.value[0].id;
+          // 只有在类型未设置时才设置默认类型
+          if (!materialForm.value.type) {
+            materialForm.value.type = groups.value[0].id;
+          }
+        }
         loading.value = false;
       } catch (error) {
         loading.value = false;
@@ -431,17 +456,56 @@ onMounted(() => {
     
     // 处理组件文件上传
     const handleFileChange = (file: any) => {
+      // 文件大小限制（5MB）
+      const maxSize = 5 * 1024 * 1024;
+      if (file.size > maxSize) {
+        ElMessage.error(`文件大小不能超过5MB，当前文件大小为${(file.size / 1024 / 1024).toFixed(2)}MB`);
+        return false;
+      }
+      
+      // 文件类型验证
+      const validFileTypes = ['.vue', '.jsx', '.tsx'];
+      const fileExtension = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+      if (!validFileTypes.includes(fileExtension)) {
+        ElMessage.error(`只支持上传${validFileTypes.join('、')}格式的文件`);
+        return false;
+      }
+      
       const reader = new FileReader();
       reader.onload = (e) => {
         try {
-          componentContent.value = e.target?.result as string || '';
-          componentCode.value = componentContent.value;
+          // 使用读取到的文件内容更新代码编辑器
+          const content = e.target?.result as string || '';
+          
+          // 限制文件内容大小，避免大文件导致页面卡顿
+          const maxContentSize = 300000; // 300KB
+          if (content.length > maxContentSize) {
+            ElMessage.warning(`文件内容过大，将只加载前${Math.floor(maxContentSize/1024)}KB的内容`);
+            componentCode.value = content.substring(0, maxContentSize);
+          } else {
+            componentCode.value = content;
+          }
+          
+          ElMessage.success('文件加载成功');
         } catch (error) {
           ElMessage.error('读取文件失败');
           console.error('读取文件失败:', error);
         }
       };
-      reader.readAsText(file.raw);
+      
+      // 处理文件读取错误
+      reader.onerror = () => {
+        ElMessage.error('文件读取出错');
+      };
+      
+      // 使用延迟处理大文件，避免UI阻塞
+      // 确保文件存在且能被读取
+      if (file.raw) {
+        reader.readAsText(file.raw);
+      } else {
+        ElMessage.error('文件无效');
+      }
+      
       return false; // 不自动上传
     };
     
@@ -499,77 +563,12 @@ onMounted(() => {
     
     // 分析组件
     const analyzeComponent = async () => {
-      if (!componentCode.value.trim()) {
-        ElMessage.warning('请先输入或上传组件代码');
-        return;
-      }
       
-      try {
-        analyzingComponent.value = true;
-        ElMessage.info('正在通过AI分析组件...');
-        
-        // 限制代码大小，避免处理过大的文件
-        const maxCodeSize = 50000; // 约50KB
-        let codeToAnalyze = componentCode.value;
-        
-        if (codeToAnalyze.length > maxCodeSize) {
-          ElMessage.warning(`组件代码过长，将只分析前${maxCodeSize/1000}KB内容`);
-          codeToAnalyze = codeToAnalyze.substring(0, maxCodeSize);
-        }
-        
-        // 设置超时处理
-        const timeoutPromise = new Promise((_, reject) => {
-          setTimeout(() => reject(new Error('分析超时')), 10000); // 10秒超时
-        });
-        
-        // 竞争Promise
-        const result = await Promise.race([
-          parseComponentWithAI(codeToAnalyze),
-          timeoutPromise
-        ]) as {
-          success: boolean;
-          material?: Partial<Material>;
-          message?: string;
-        };
-        
-        if (result.success && result.material) {
-          // 合并AI解析结果与基本信息
-          materialForm.value = {
-            ...materialForm.value,
-            ...result.material,
-            // 保留用户已经输入的基本信息
-            name: materialForm.value.name || result.material.name,
-            type: materialForm.value.type || result.material.type,
-            description: materialForm.value.description || result.material.description,
-          };
-          
-          descriptorJson.value = JSON.stringify(materialForm.value, null, 2);
-          ElMessage.success('组件分析成功');
-          
-          // 标记已分析
-          isAnalyzed.value = true;
-          // 进入下一步
-          currentStep.value = 2;
-        } else {
-          ElMessage.error(result.message || '组件分析失败');
-        }
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : '组件分析失败';
-        ElMessage.error(errorMessage);
-        console.error('组件分析失败:', error);
-      } finally {
-        analyzingComponent.value = false;
-      }
     };
     
     // 提交表单
     const submitForm = async () => {
-      // 如果正在编辑描述符，先更新表单
-      if (isEditingDescriptor.value) {
-        const updated = updateFormFromJson();
-        if (!updated) return;
-        isEditingDescriptor.value = false;
-      }
+      // 无需检查编辑模式，直接使用表单数据
       
       // 表单验证
       if (!materialForm.value.name) {
@@ -608,32 +607,6 @@ onMounted(() => {
       });
     };
     
-    // 切换描述符编辑模式
-    const toggleDescriptorEdit = () => {
-      if (isEditingDescriptor.value) {
-        // 从编辑模式切回表单模式，需要更新表单
-        const updated = updateFormFromJson();
-        if (updated) {
-          isEditingDescriptor.value = false;
-        }
-      } else {
-        // 切换到编辑模式
-        isEditingDescriptor.value = true;
-      }
-    };
-    
-    // 过滤模板
-    const filteredTemplates = () => {
-      if (!searchQuery.value) return mockTemplates;
-      
-      const query = searchQuery.value.toLowerCase();
-      return mockTemplates.filter(template => 
-        template.name.toLowerCase().includes(query) || 
-        template.description.toLowerCase().includes(query) ||
-        template.tags.some(tag => tag.toLowerCase().includes(query))
-      );
-    };
-    
     // 步骤定义
     const steps = [
       { title: '基本信息', description: '填写物料基本信息' },
@@ -643,6 +616,12 @@ onMounted(() => {
     
     // 步骤变化处理
     const handleStepChange = (step: number) => {
+      // 如果切换到代码编辑步骤，延迟初始化编辑器
+      if (step === 1 && !editorReady.value) {
+        editorLoading.value = true;
+        editorReady.value = true;
+        editorLoading.value = false;
+      }
       currentStep.value = step;
     };
     
@@ -654,6 +633,13 @@ onMounted(() => {
           analyzeComponent();
         } else {
           currentStep.value += 1;
+          // 如果切换到代码编辑步骤，延迟初始化编辑器
+          if (currentStep.value === 1 && !editorReady.value) {
+            editorLoading.value = true;
+            // 延迟加载编辑器，避免UI阻塞
+            editorReady.value = true;
+            editorLoading.value = false;
+          }
         }
       }
     };
@@ -670,6 +656,24 @@ onMounted(() => {
       submitForm();
     };
     
+    // 改变分组时不再自动更新类型
+    const handleGroupChange = (groupId: string) => {
+      materialForm.value.group = groupId;
+      // 移除自动设置类型的逻辑，让用户可以独立选择类型
+    };
+    
+    // 过滤模板
+    const filteredTemplates = () => {
+      if (!searchQuery.value) return mockTemplates;
+      
+      const query = searchQuery.value.toLowerCase();
+      return mockTemplates.filter(template => 
+        template.name.toLowerCase().includes(query) || 
+        template.description.toLowerCase().includes(query) ||
+        template.tags.some(tag => tag.toLowerCase().includes(query))
+      );
+    };
+    
     // 初始化
     onMounted(() => {
       loadGroups();
@@ -684,11 +688,12 @@ onMounted(() => {
       analyzingComponent,
       currentStep,
       isAnalyzed,
-      isEditingDescriptor,
       descriptorTabActive,
       showTemplateDrawer,
       selectedTemplateId,
       searchQuery,
+      editorLoading,
+      editorReady,
       
       // 数据
       groups,
@@ -709,7 +714,6 @@ onMounted(() => {
       previewTemplate,
       addTag,
       removeTag,
-      toggleDescriptorEdit,
       updateFormFromJson,
       filteredTemplates,
       handleStepChange,
@@ -717,13 +721,14 @@ onMounted(() => {
       handlePrevStep,
       handleFinish,
       submitForm,
-      cancelCreate
+      cancelCreate,
+      handleGroupChange
     };
   },
   render() {
     return (
       <div class="material-create-container" role="region" aria-label="创建物料">
-        <h1 class="page-title">创建物料</h1>
+        {/* <h1 class="page-title">创建物料</h1> */}
         
         <StepPanel
           steps={this.steps}
@@ -751,7 +756,15 @@ onMounted(() => {
                     </ElFormItem>
                     
                     <ElFormItem label="类型" required>
-                      <ElInput v-model={this.materialForm.type} placeholder="请输入物料类型，如Button、Card等" />
+                      <ElSelect 
+                        v-model={this.materialForm.type} 
+                        style={{width: '100%'}} 
+                        placeholder="请选择物料类型"
+                      >
+                        {this.groups.map(group => (
+                          <ElOption key={group.id} label={group.name} value={group.id} />
+                        ))}
+                      </ElSelect>
                     </ElFormItem>
                     
                     <ElFormItem label="描述">
@@ -761,14 +774,6 @@ onMounted(() => {
                         rows={3}
                         placeholder="请输入物料描述"
                       />
-                    </ElFormItem>
-                    
-                    <ElFormItem label="分组">
-                      <ElSelect v-model={this.materialForm.group} style={{width: '100%'}}>
-                        {this.groups.map(group => (
-                          <ElOption key={group.id} label={group.name} value={group.id} />
-                        ))}
-                      </ElSelect>
                     </ElFormItem>
                     
                     <ElFormItem label="版本">
@@ -817,18 +822,27 @@ onMounted(() => {
                     accept=".vue,.jsx,.tsx"
                     autoUpload={false}
                     fileList={this.fileList}
-                    onChange={this.handleFileChange}
+                    onChange={(uploadFile) => {
+                      // 确保使用最新上传的文件
+                      const file = uploadFile.raw || uploadFile;
+                      this.handleFileChange(file);
+                    }}
                     limit={1}
                     drag
+                    multiple={false}
+                    beforeUpload={(file) => {
+                      // 文件大小和类型验证在handleFileChange中已处理
+                      return false; // 阻止自动上传
+                    }}
                   >
                     <div class="upload-content">
                       <ElIcon class="upload-icon"><UploadIcon /></ElIcon>
                       <div class="upload-text">拖拽文件到此处或点击上传</div>
-                      <div class="upload-tip">支持 .vue、.jsx、.tsx 文件</div>
+                      <div class="upload-tip">支持 .vue、.jsx、.tsx 和文件夹，文件</div>
                     </div>
                   </ElUpload>
                 </div>
-                
+                <div class="code-editor-main">
                 <div class="code-editor-header">
                   <div class="code-editor-title">
                     <ElIcon><Edit /></ElIcon> 组件代码编辑器
@@ -858,17 +872,34 @@ onMounted(() => {
                 </div>
                 
                 <div class="code-editor-wrapper">
-                  <MonacoEditor
-                    modelValue={this.componentCode}
-                    onUpdate:modelValue={(v: string) => this.componentCode = v}
-                    language="vue"
-                    height="500px"
-                    options={{
-                      automaticLayout: true,
-                      formatOnPaste: true,
-                      formatOnType: true
-                    }}
-                  />
+                  {this.editorLoading ? (
+                    <div class="editor-loading-placeholder" style={{ height: '100%', minHeight: 'calc(100vh - 380px)', display: 'flex', justifyContent: 'center', alignItems: 'center', background: '#f5f7fa', border: '1px solid #e4e7ed', borderRadius: '4px' }}>
+                      <div class="loading-content" style={{ textAlign: 'center' }}>
+                        <ElIcon style={{ fontSize: '24px', marginBottom: '16px', animation: 'rotating 2s linear infinite' }}><Refresh /></ElIcon>
+                        <div>编辑器加载中，请稍候...</div>
+                      </div>
+                    </div>
+                  ) : this.editorReady ? (
+                    <SimpleCodeEditor
+                      modelValue={this.componentCode}
+                      onUpdate:modelValue={(v: string) => this.componentCode = v}
+                      language="vue"
+                      theme="light"
+                      height="100%"
+                      placeholder="请输入Vue组件代码..."
+                      options={{
+                        formatOnPaste: true,
+                        formatOnType: false
+                      }}
+                    />
+                  ) : (
+                    <div class="editor-loading-placeholder" style={{ height: '100%', minHeight: 'calc(100vh - 380px)', display: 'flex', justifyContent: 'center', alignItems: 'center', background: '#f5f7fa', border: '1px solid #e4e7ed', borderRadius: '4px' }}>
+                      <ElButton type="primary" onClick={() => { this.editorLoading = true; this.editorReady = true; this.editorLoading = false; }}>
+                        加载编辑器
+                      </ElButton>
+                    </div>
+                  )}
+                </div>
                 </div>
               </div>
             ),
@@ -876,35 +907,20 @@ onMounted(() => {
             /* 步骤3：AI分析与描述编辑 */
             'step-2': () => (
               <div class="descriptor-container">
-                <div class="descriptor-header">
-                  <div class="descriptor-title">
-                    <ElIcon><DocumentIcon /></ElIcon> 物料描述符
-                  </div>
-                  
-                  <div class="descriptor-actions">
-                    <ElSwitch
-                      v-model={this.isEditingDescriptor}
-                      activeText="JSON编辑模式"
-                      inactiveText="表单编辑模式"
-                      onChange={this.toggleDescriptorEdit}
-                    />
-                  </div>
-                </div>
-                
                 <div class="descriptor-tabs">
                   <div 
                     class={[
                       'descriptor-tab', 
                       { active: this.descriptorTabActive === 'form' }
                     ]}
-                    onClick={() => !this.isEditingDescriptor && (this.descriptorTabActive = 'form')}
+                    onClick={() => this.descriptorTabActive = 'form'}
                   >
                     表单视图
                   </div>
                   <div 
                     class={[
                       'descriptor-tab', 
-                      { active: this.descriptorTabActive === 'json' || this.isEditingDescriptor }
+                      { active: this.descriptorTabActive === 'json' }
                     ]}
                     onClick={() => this.descriptorTabActive = 'json'}
                   >
@@ -913,15 +929,7 @@ onMounted(() => {
                 </div>
                 
                 <div class="descriptor-content">
-                  {this.isEditingDescriptor ? (
-                    <div class="json-editor-wrapper">
-                      <JsonEditor
-                        modelValue={this.descriptorJson}
-                        onUpdate:modelValue={(v: string) => this.descriptorJson = v}
-                        height="500px"
-                      />
-                    </div>
-                  ) : this.descriptorTabActive === 'form' ? (
+                  {this.descriptorTabActive === 'form' ? (
                     <div class="form-editor-wrapper">
                       <ElForm model={this.materialForm} label-width="100px" label-position="right" class="material-form">
                         <div class="form-section">
@@ -932,7 +940,14 @@ onMounted(() => {
                           </ElFormItem>
                           
                           <ElFormItem label="类型" required>
-                            <ElInput v-model={this.materialForm.type} />
+                            <ElSelect 
+                              v-model={this.materialForm.type} 
+                              style={{width: '100%'}}
+                            >
+                              {this.groups.map(group => (
+                                <ElOption key={group.id} label={group.name} value={group.id} />
+                              ))}
+                            </ElSelect>
                           </ElFormItem>
                           
                           <ElFormItem label="描述">
@@ -944,7 +959,10 @@ onMounted(() => {
                           </ElFormItem>
                           
                           <ElFormItem label="分组">
-                            <ElSelect v-model={this.materialForm.group} style={{width: '100%'}}>
+                            <ElSelect 
+                              v-model={this.materialForm.group} 
+                              style={{width: '100%'}}
+                            >
                               {this.groups.map(group => (
                                 <ElOption key={group.id} label={group.name} value={group.id} />
                               ))}
@@ -1006,7 +1024,7 @@ onMounted(() => {
                                   <ElTableColumn prop="default" label="默认值" formatter={(row: Record<string, any>) => JSON.stringify(row.default) || '-'} />
                                 </ElTable>
                               ) : (
-                                <ElEmpty description="暂无属性配置，请切换到JSON编辑模式添加" />
+                                <ElEmpty description="暂无属性配置，请切换到JSON视图查看更多" />
                               )}
                             </div>
                           </ElFormItem>
@@ -1018,8 +1036,7 @@ onMounted(() => {
                       <JsonEditor
                         modelValue={JSON.parse(this.descriptorJson)}
                         onUpdate:modelValue={(v: any) => this.descriptorJson = JSON.stringify(v, null, 2)}
-                        height="500px"
-                        readOnly={true}
+                        height="100%"
                       />
                     </div>
                   )}
@@ -1060,7 +1077,8 @@ onMounted(() => {
                       <img src={template.thumbnail} class="template-thumbnail" />
                     ) : (
                       <div class="template-thumbnail-placeholder">
-                        <ElIcon><Document /></ElIcon>
+                        <ElIcon style={{ fontSize: '28px', color: '#909399' }}><Document /></ElIcon>
+                        <div style={{ marginTop: '8px', fontSize: '14px', color: '#606266' }}>{template.name}</div>
                       </div>
                     )}
                   </div>
