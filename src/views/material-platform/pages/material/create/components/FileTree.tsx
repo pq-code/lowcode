@@ -8,9 +8,7 @@ import {
   FolderAdd,
   DocumentAdd,
   Folder,
-  Position as MoveIcon,
-  Menu as ComponentIcon,
-  Top as TopRight
+  Position as MoveIcon
 } from '@element-plus/icons-vue';
 import type { ComponentFileNode } from '../../../../types';
 
@@ -20,13 +18,9 @@ export default defineComponent({
     fileTree: {
       type: Array as PropType<ComponentFileNode[]>,
       required: true
-    },
-    currentSelectedFileId: {
-      type: String,
-      default: null
     }
   },
-  emits: ['select-file', 'create-file', 'create-folder', 'rename', 'delete', 'set-main', 'move'],
+  emits: ['select-file', 'create-file', 'create-folder', 'rename', 'delete', 'move'],
   setup(props, { emit }) {
     const selectFile = (node: ComponentFileNode) => {
       if (!node.isFolder) {
@@ -50,10 +44,6 @@ export default defineComponent({
       emit('delete', node);
     };
     
-    const handleSetMainFile = (node: ComponentFileNode) => {
-      emit('set-main', node);
-    };
-    
     const handleMove = (node: ComponentFileNode) => {
       emit('move', node);
     };
@@ -71,7 +61,6 @@ export default defineComponent({
       handleCreateFolder,
       handleRename,
       handleDelete,
-      handleSetMainFile,
       handleMove,
       handleNodeClick
     };
@@ -88,8 +77,6 @@ export default defineComponent({
           }}
           node-key="id"
           default-expand-all
-          highlight-current
-          current-node-key={this.currentSelectedFileId}
           onNode-click={this.handleNodeClick}
           v-slots={{
             default: ({ node, data }: any) => (
@@ -98,13 +85,8 @@ export default defineComponent({
                   <ElIcon class="node-icon">
                     {data.isFolder ? <Folder /> : <Document />}
                   </ElIcon>
-                  <span class={["node-label", data.isMain ? "main-file" : ""]}>
+                  <span class="node-label">
                     {data.fileName}
-                    {data.isMain && (
-                      <ElIcon class="main-file-icon">
-                        <TopRight />
-                      </ElIcon>
-                    )}
                   </span>
                 </span>
                 <span class="node-actions">
@@ -134,12 +116,6 @@ export default defineComponent({
                             <ElIcon><Edit /></ElIcon>
                             <span>重命名</span>
                           </div>
-                          {!data.isFolder && data.fileName.endsWith('.vue') && (
-                            <div class="action-item" onClick={() => this.handleSetMainFile(data)}>
-                              <ElIcon><ComponentIcon /></ElIcon>
-                              <span>设为主文件</span>
-                            </div>
-                          )}
                           {data.parentId && (
                             <div class="action-item" onClick={() => this.handleMove(data)}>
                               <ElIcon><MoveIcon /></ElIcon>

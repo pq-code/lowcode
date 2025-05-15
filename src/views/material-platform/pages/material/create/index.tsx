@@ -1,4 +1,4 @@
-import { defineComponent, ref, computed, onMounted, watch } from 'vue';
+import { defineComponent, ref, computed, onMounted, watch, defineAsyncComponent } from 'vue';
 import { useRouter } from 'vue-router';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { fetchMaterialGroups, createMaterial } from '../../../services/materialService';
@@ -9,16 +9,14 @@ import StepPanel from '@/components/StepPanel';
 // 导入样式
 import './index.css';
 
-// 导入拆分的组件（使用索引文件）
-import {
-  BasicInfoForm,
-  CodeEditor,
-  FileTree,
-  FileUploader,
-  FileOperationDialogs,
-  TemplateDrawer,
-  DescriptorEditor
-} from './components';
+// 使用异步导入来提高性能
+const BasicInfoForm = defineAsyncComponent(() => import('./components/BasicInfoForm'));
+const FileTree = defineAsyncComponent(() => import('./components/FileTree'));
+const FileUploader = defineAsyncComponent(() => import('./components/FileUploader'));
+const FileOperationDialogs = defineAsyncComponent(() => import('./components/FileOperationDialogs'));
+const TemplateDrawer = defineAsyncComponent(() => import('./components/TemplateDrawer'));
+const DescriptorEditor = defineAsyncComponent(() => import('./components/DescriptorEditor'));
+const CodeEditor = defineAsyncComponent(() => import('./components/CodeEditor'));
 
 // 导入拆分的钩子
 import useFileOperations from './hooks/useFileOperations';
@@ -417,10 +415,13 @@ export default defineComponent({
           return;
         }
         
-        // 获取组件文件内容
-        const mainFileId = fileTree.value.find(node => node.isMain)?.id;
+        // 获取组件根文件夹
+        const rootFolder = getComponentRootFolder();
+        
+        // 获取主文件ID
+        const mainFileId = fileOperations.findMainFileId(rootFolder);
         if (!mainFileId) {
-          ElMessage.error('请设置一个主文件');
+          ElMessage.error('未找到有效的Vue组件文件');
           submitting.value = false;
           return;
         }
@@ -428,17 +429,31 @@ export default defineComponent({
         // 构建物料数据
         const materialData: Partial<Material> = {
           ...materialForm.value,
-          files: Object.entries(componentFiles.value).map(([id, content]) => {
-            const node = fileOperations.findNodeById(id);
-            return {
-              id,
-              fileName: node?.fileName || '',
-              content,
-              isMain: id === mainFileId
-            };
-          }),
-          mainFile: fileOperations.findNodeById(mainFileId)?.fileName || ''
+          files: {
+            rootFolder: rootFolder,
+            files: componentFiles.value,
+            mainFileId: mainFileId
+          }
         };
+
+        // 获取组件根文件夹
+        function getComponentRootFolder(): ComponentFileNode {
+          // 查找根目录
+          const componentName = materialForm.value.name || 'component';
+          let rootFolder = fileTree.value.find(node => node.isFolder && (node.fileName === componentName));
+          
+          // 如果没有找到，则返回第一个文件夹或创建一个新的
+          if(!rootFolder) {
+            rootFolder = fileTree.value.find(node => node.isFolder) || {
+              id: `folder_${Date.now()}`,
+              fileName: componentName,
+              isFolder: true,
+              children: fileTree.value.filter(node => !node.isFolder)
+            };
+          }
+          
+          return rootFolder;
+        }
         
         // 发送请求 (假设createMaterial接受任意类型的参数)
         await createMaterial(materialData as any);
@@ -475,7 +490,27 @@ export default defineComponent({
     
     // 下一步
     const handleNextStep = () => {
-      if (currentStep.value === 1) {
+      if (currentStep.value === 0) {
+        // 验证基本信息表单
+        if (!materialForm.value.name) {
+          ElMessage.error('请输入物料名称');
+          return;
+        }
+        if (!materialForm.value.type) {
+          ElMessage.error('请选择物料类型');
+          return;
+        }
+        if (!materialForm.value.group) {
+          ElMessage.error('请选择物料分组');
+          return;
+        }
+        if (!materialForm.value.version) {
+          ElMessage.error('请输入物料版本号');
+          return;
+        }
+        
+        currentStep.value += 1;
+      } else if (currentStep.value === 1) {
         // 执行AI分析
         analyzingComponent.value = true;
         // 模拟分析延迟
@@ -621,13 +656,11 @@ export default defineComponent({
                   
                   <FileTree
                     fileTree={this.fileTree}
-                    currentSelectedFileId={this.currentSelectedFileId || ''}
                     onSelect-file={this.handleSelectFile}
                     onCreate-file={(node: ComponentFileNode) => this.createNewFile(node)()}
                     onCreate-folder={(node: ComponentFileNode) => this.createNewFolder(node)()}
                     onRename={(node: ComponentFileNode) => this.renameFileOrFolder(node)()}
                     onDelete={this.deleteFileOrFolder}
-                    onSet-main={this.setAsMainFile}
                     onMove={this.showMoveDialog}
                   />
                 </div>

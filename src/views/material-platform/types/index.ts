@@ -73,7 +73,6 @@ export interface ComponentFileNode {
   lastModified?: number;
   language?: string;
   size?: number;
-  isMain?: boolean; // 标记是否为主文件
 }
 
 // 组件文件结构类型

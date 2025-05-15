@@ -141,7 +141,7 @@ export default function useFileOperations(options: UseFileOperationsOptions) {
   };
   
   // 查找节点
-  const findNodeById = (id: string, nodes: ComponentFileNode[]): ComponentFileNode | null => {
+  const findNodeById = (id: string, nodes: ComponentFileNode[] = fileTree.value): ComponentFileNode | null => {
     for (const node of nodes) {
       if (node.id === id) return node;
       
@@ -355,38 +355,6 @@ export default function useFileOperations(options: UseFileOperationsOptions) {
     }
   };
   
-  // 设置文件为主文件
-  const setAsMainFile = (node: ComponentFileNode) => {
-    if (node.isFolder) {
-      ElMessage.warning('文件夹不能设为主文件');
-      return;
-    }
-    
-    if (!node.fileName.endsWith('.vue')) {
-      ElMessage.warning('只有Vue文件可以设为主文件');
-      return;
-    }
-    
-    // 重置所有文件的主文件标志
-    const resetMainFlag = (nodes: ComponentFileNode[]) => {
-      for (const n of nodes) {
-        if (!n.isFolder) {
-          n.isMain = false;
-        }
-        
-        if (n.children) {
-          resetMainFlag(n.children);
-        }
-      }
-    };
-    
-    resetMainFlag(fileTree.value);
-    
-    // 标记当前文件为主文件
-    node.isMain = true;
-    ElMessage.success(`已将 ${node.fileName} 设为主文件`);
-  };
-  
   // 添加文件到文件树
   const addFileToTree = (fileName: string, content: string) => {
     const fileId = `file_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
@@ -418,8 +386,7 @@ export default function useFileOperations(options: UseFileOperationsOptions) {
       path: filePath,
       lastModified: Date.now(),
       language: fileName.split('.').pop() || 'vue',
-      size: content.length,
-      isMain: fileName.includes('index') || fileName === `${componentName}.vue` // 自动判断主文件
+      size: content.length
     };
     
     // 将文件添加到根文件夹
@@ -480,8 +447,7 @@ export default function useFileOperations(options: UseFileOperationsOptions) {
           path: currentPath,
           lastModified: Date.now(),
           language: pathPart.split('.').pop() || 'vue',
-          size: content.length,
-          isMain: pathPart.includes('index') || pathPart === `${componentName}.vue` // 自动判断主文件
+          size: content.length
         };
         
         if (!currentNode.children) {
@@ -531,27 +497,7 @@ export default function useFileOperations(options: UseFileOperationsOptions) {
   
   // 寻找主文件ID
   const findMainFileId = (rootFolder: ComponentFileNode): string | undefined => {
-    // 查找被标记为主文件的节点
-    const findMainFile = (node: ComponentFileNode): string | undefined => {
-      if (!node.isFolder && node.isMain) {
-        return node.id;
-      }
-      
-      if (node.children) {
-        for (const child of node.children) {
-          const foundId = findMainFile(child);
-          if (foundId) return foundId;
-        }
-      }
-      
-      return undefined;
-    };
-    
-    // 首先查找标记为主文件的
-    const mainId = findMainFile(rootFolder);
-    if (mainId) return mainId;
-    
-    // 如果没有标记，查找index.vue或与组件名同名的.vue文件
+    // 查找index.vue或与组件名同名的.vue文件
     const findMainByName = (node: ComponentFileNode): string | undefined => {
       const componentName = materialName.value || '';
       
@@ -614,7 +560,6 @@ export default function useFileOperations(options: UseFileOperationsOptions) {
     moveFileOrFolder,
     showMoveDialog,
     executeMove,
-    setAsMainFile,
     addFileToTree,
     addFileWithPathToTree,
     findNodeById,

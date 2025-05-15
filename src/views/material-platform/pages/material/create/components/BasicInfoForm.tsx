@@ -88,6 +88,19 @@ export default defineComponent({
               </ElSelect>
             </ElFormItem>
             
+            <ElFormItem label="分组" required>
+              <ElSelect 
+                modelValue={this.materialForm.group} 
+                style={{width: '100%'}} 
+                placeholder="请选择物料分组"
+                onUpdate:modelValue={(val: string) => this.updateMaterialForm('group', val)}
+              >
+                {this.groups.map(group => (
+                  <ElOption key={group.id} label={group.name} value={group.id} />
+                ))}
+              </ElSelect>
+            </ElFormItem>
+            
             <ElFormItem label="描述">
               <ElInput 
                 modelValue={this.materialForm.description} 
@@ -104,6 +117,22 @@ export default defineComponent({
                 placeholder="请输入版本号，如1.0.0" 
                 onUpdate:modelValue={(val: string) => this.updateMaterialForm('version', val)}
               />
+            </ElFormItem>
+
+            <ElFormItem label="图标">
+              <ElInput 
+                modelValue={this.materialForm.icon} 
+                placeholder="请输入图标名称或类名" 
+                onUpdate:modelValue={(val: string) => this.updateMaterialForm('icon', val)}
+              />
+            </ElFormItem>
+
+            <ElFormItem label="容器组件">
+              <el-switch
+                modelValue={this.materialForm.isContainer} 
+                onUpdate:modelValue={(val: boolean) => this.updateMaterialForm('isContainer', val)}
+              />
+              <span class="form-tip">设置为容器组件后，可以在其中放置其他组件</span>
             </ElFormItem>
             
             <ElFormItem label="标签">
